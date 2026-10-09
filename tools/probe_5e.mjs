@@ -57,6 +57,12 @@ const pl = mk('warrior',5,{str:16,dex:16,con:16});
 const cc = C.start(pl, en, {rng: NK.RNG.make(7), tier, act:1, source:'normal', allowSurprise:false});
 cc.turn = {action:true,bonus:true,moved:false};
 C.playerAction(cc,{type:'dodge'});
-console.log('  · 闪避后 dodging =', cc.player.dodging);
+C.playerAction(cc, { type: 'dodge' });
+const foe = cc.enemies.find((e) => e.hp > 0);
+const mode = foe ? C.attackMode(cc, foe, cc.player) : null;
+// A3 已修：闪避持续到「你的下个回合开始」，敌人行动期间仍然生效
+console.log('  · 闪避后 dodging =', cc.player.dodging, '　敌人打你的掷法 =', mode,
+  mode === 'dis' ? '✔ 劣势（5e：闪避让攻击你的检定具有劣势）' : '（未生效）');
 C.endPlayerTurn(cc);
-console.log('  · 结束回合后 dodging =', cc.player.dodging, '← 敌人尚未行动就被清除，闪避实际不生效');
+console.log('  · 走完一轮回到自己回合后 dodging =', cc.player.dodging,
+  cc.player.dodging === false ? '✔ 已清除（5e：持续到你下个回合开始）' : '（未清除）');

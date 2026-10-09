@@ -91,6 +91,8 @@ while (App.run && !App.run.ended && guard++ < 1500) {
   const s = App.screen;
   seen[s] = (seen[s] || 0) + 1;
   if (s === 'map') {
+    // 没有通关了：走太久还没死就主动收手，保证一定能走到结算
+    if (guard > 400) { step('主动收手', () => { UI.act('map:abandon'); UI.act('map:abandon'); }); continue; }
     const av = NK.MapGen.available(App.run);
     if (!av.length) { errors.push('地图无路可走'); break; }
     step('进入节点 ' + av[0].type, () => UI.act('node', { id: av[0].id }));
@@ -995,7 +997,7 @@ step('图鉴条目与进度', () => {
 step('记录与图鉴界面能渲染', () => {
   UI.init();
   App.modal = 'records'; UI.render();
-  if (!html.innerHTML.includes('通关记录')) throw new Error('记录界面没有渲染');
+  if (!html.innerHTML.includes('行走记录')) throw new Error('记录界面没有渲染');
   App.modal = 'codex'; App.codexTab = 'monsters'; UI.render();
   if (!html.innerHTML.includes('图鉴')) throw new Error('图鉴界面没有渲染');
   if (!html.innerHTML.includes('？？？')) throw new Error('未解锁的图鉴条目应该显示 ？？？');

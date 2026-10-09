@@ -60,7 +60,7 @@
         isPlayer: false, uid: U.uid('e'),
         id: def.id, name: def.name, rank: def.rank, act: def.act, type: def.type,
         maxHp: Math.max(1, Math.round(def.hp * bal.hp * (tier.hpMul || 1))),
-        ac: def.ac + (bal.ac || 0) + (def.rank === 'boss' ? Math.max(0, (tier.id || 1) - 1) : 0),
+        ac: def.ac + (bal.ac || 0) + (tier.acAdd || 0) + (def.rank === 'boss' ? Math.max(0, (tier.id || 1) - 1) : 0),
         attrs: Object.assign({}, def.attrs),
         saveProfs: def.saveProfs || [], skills: def.skills || {},
         resist: (def.resist || []).slice(), immune: (def.immune || []).slice(), vuln: (def.vuln || []).slice(),
@@ -94,7 +94,7 @@
         if (rng.chance(cfg.elite.addNormalChance)) list.push({ id: rng.pick(actDef.pool), minion: true });
       } else {
         list.push({ id: rng.pick(actDef.pool) });
-        const extra = cfg.normal.secondChance + Math.min(0.25, ((tier.id || 1) - 1) * 0.08);
+        const extra = cfg.normal.secondChance + Math.min(0.25, ((tier.id || 1) - 1) * 0.08) + (tier.extraChance || 0);
         if (rng.chance(extra)) {
           list.push({ id: rng.pick(actDef.pool), minion: true });
           if (rng.chance(0.2)) list.push({ id: rng.pick(actDef.pool), minion: true });
@@ -483,7 +483,7 @@
       return real;
     },
 
-    defeat(c, target) {
+    defeat(c, target, source) {
       if (isPlayer(target)) {
         const p = target;
         if (p.flags.divineIntervention && !p.usedThisBattle.divineIntervention) {
@@ -546,6 +546,10 @@
       if (target.magic && target.magic.rally && !target.usedRally) { /* 预留 */ }
       target.hp = 0;
       Combat.line(c, K.death, `${target.name}倒下了。`);
+      // 狂战士 L7「狂暴·回气」：狂暴状态下每击杀一个敌人回一点血
+      if (isPlayer(source) && source.raging && (source.flags.rageHealOnKill || 0) > 0) {
+        Combat.heal(c, source, source.flags.rageHealOnKill, '狂暴回气');
+      }
       if (c.enemies.every((e) => e.hp <= 0)) { c.over = true; c.result = 'victory'; }
     },
 
@@ -640,6 +644,16 @@
       const band = Combat.bandOf(attacker, target);
       if (band === 0) return '';
       return `${w ? w.name : '徒手'}够不到「${BAND_NAMES[band]}」的敌人——先点「接近」拉近一档。`;
+    },
+    /** 徒手能不能够到（徒手永远是 5 尺近战，跟手里拿什么武器无关） */
+    canReachUnarmed(attacker, target) {
+      return Combat.bandOf(attacker, target) === 0;
+    },
+    /** 徒手够不到时的提示 */
+    unarmedHint(attacker, target) {
+      const band = Combat.bandOf(attacker, target);
+      if (band === 0) return '';
+      return `徒手够不到「${BAND_NAMES[band]}」的敌人——先点「接近」拉近一档。`;
     },
     /** 战斗里的距离概览（给界面用） */
     distance(c) {
@@ -977,16 +991,17 @@
       if (p.flags.actionSurge && (p.usedThisBattle.actionSurgeCount || 0) < (p.actionSurgeMax || 1)) bonus.push({ id: 'actionSurge', label: '动作如潮（额外动作）' });
       if (p.flags.superiority && (p.superiorityLeft || 0) > 0) bonus.push({ id: 'superiority', label: `卓越骰（剩余 ${p.superiorityLeft}）` });
       // 双武器战斗：左手有武器时可以用附赠动作再打一次
-      if (p.items.offHand && p.items.offHand.dice) bonus.push({ id: 'offhand', label: `副手攻击（${p.items.offHand.name}）` });
+      if (p.items.offHand && p.items.offHand.dice) bonus.push({ id: 'offhand', label: `副手攻击（${p.items.offHand.name}）`, needReach: 'offhand' });
       // 稳定瞄准（游荡者）：本回合没移动过就能换来优势
       if (p.flags.steadyAim && !c.turn.moved && !p.turnFlags.hidden) bonus.push({ id: 'steadyAim', label: '稳定瞄准（本回合未移动）' });
       // 野蛮人：狂暴（附赠动作：物理抗性 + 伤害加值）
       if (p.flags.rage && !p.raging && (p.rageLeft || 0) > 0) bonus.push({ id: 'rage', label: `狂暴（剩余 ${p.rageLeft}）` });
       // 鲁莽攻击（5e：本回合你的攻击有优势，但打你的敌人也有优势）
       if (p.flags.reckless && p.raging && !p.recklessActive) bonus.push({ id: 'reckless', label: '鲁莽攻击（本回合攻击优势，但敌人打你也优势）' });
-      // 武僧：气技（附赠动作）
-      if (p.flags.ki && (p.kiLeft || 0) >= 1 && p.flags.flurry) bonus.push({ id: 'flurry', label: '疾风连击（1 气）' });
-      if (p.flags.ki && (p.kiLeft || 0) >= 1 && p.flags.stun) bonus.push({ id: 'stun', label: '震慑拳（1 气）' });
+      // 武僧：气技（附赠动作）——徒手打击，必须贴身
+      if (p.flags.ki && (p.kiLeft || 0) >= 1 && p.flags.flurry) bonus.push({ id: 'flurry', label: '疾风连击（1 气）', needReach: 'unarmed' });
+      if (p.flags.ki && (p.kiLeft || 0) >= 1 && p.flags.stun) bonus.push({ id: 'stun', label: '震慑拳（1 气）', needReach: 'unarmed' });
+      if (p.flags.ki && (p.kiLeft || 0) >= 1 && p.flags.patientDefense) bonus.push({ id: 'patientDefense', label: '忍耐防御（1 气，采取闪避）' });
       // 德鲁伊：野性形态
       if ((p.wildShapeLeft || 0) > 0 && !p.wildShaped) bonus.push({ id: 'wildShape', label: `野性形态（剩余 ${p.wildShapeLeft} 次）` });
       // 吟游诗人：吟游激励（给自己打气，下一次攻击掷骰 +1d6）
@@ -1018,6 +1033,14 @@
         canOut: !c.turn.moved && dist.max < 2,
         text: dist.text,
       };
+      // 需要贴身的附赠动作：现在够不到就标出来，界面上禁用并给出提示（走近后会重新可用）
+      for (const b of bonus) {
+        if (!b.needReach || !front) continue;
+        const ok = b.needReach === 'unarmed'
+          ? Combat.canReachUnarmed(p, front)
+          : Combat.canReach(p, front, p.items.offHand);
+        if (!ok) b.blocked = b.needReach === 'unarmed' ? Combat.unarmedHint(p, front) : Combat.reachHint(p, front, p.items.offHand);
+      }
       return { spells, upcast, bonus, items, cls, move, front, canReachFront: front ? Combat.canReach(p, front) : false };
     },
 
@@ -1027,10 +1050,14 @@
       return true;
     },
 
+    /** 执行一个玩家动作。返回战斗对象，并把失败原因挂在 c.actionFailed 上（成功则为 null），
+     *  供 UI 判断「这一手到底用出去没有」——失败时不能记进「上一手」，否则会锁死在同一个动作上。 */
     playerAction(c, action) {
       if (c.over) return c;
       const p = c.player;
-      if (p.dying) { Combat.line(c, K.warn, '你正处在濒死状态，除了等待别无选择。'); return c; }
+      c.actionFailed = null;
+      const logAt = c.log.length;
+      if (p.dying) { Combat.line(c, K.warn, '你正处在濒死状态，除了等待别无选择。'); c.actionFailed = '濒死'; return c; }
       switch (action.type) {
         case 'attack': Combat.doAttackAction(c, action); break;
         case 'cast': Combat.castSpell(c, action); break;
@@ -1046,6 +1073,12 @@
           break;
         case 'endTurn': Combat.endPlayerTurn(c); break;
         default: break;
+      }
+      // 失败路径都会往日志里写一条 warn，据此判定这一手没用出去
+      // （endTurn 例外：它会一路推进到下一个玩家回合，期间的敌人日志不算自己的失败）
+      if (action.type !== 'endTurn') {
+        const warn = c.log.slice(logAt).find((l) => l.k === K.warn);
+        if (warn) c.actionFailed = warn.t;
       }
       return c;
     },
@@ -1385,12 +1418,16 @@
       } else if (id === 'flurry') {
         if ((p.kiLeft || 0) < 1) { Combat.line(c, K.warn, '气不够了。'); return; }
         const t0 = Combat.pickTarget(c, action.target); if (!t0) return;
+        // 疾风连击是徒手打击，必须贴身
+        if (!Combat.canReachUnarmed(p, t0)) { Combat.line(c, K.warn, Combat.unarmedHint(p, t0)); return; }
         c.turn.bonus = false; p.kiLeft -= 1;
         Combat.line(c, K.sys, `▶ 疾风连击（1 气 = 两次徒手打击，1d${R.monkDie(p)}）`);
         for (let i = 0; i < 2; i++) {
           if (c.over) break;
           const t = Combat.pickTarget(c, action.target);
           if (!t) break;
+          // 第一击可能打死目标、换到另一个距离不同的敌人，每一击都要重新判定
+          if (!Combat.canReachUnarmed(p, t)) { Combat.line(c, K.warn, Combat.unarmedHint(p, t)); break; }
           Combat.attack(c, p, t, {
             bonus: R.attackBonus(p, null), dice: `1d${R.monkDie(p)}`, dmgMod: R.damageBonus(p, null),
             type: '钝击', verb: `徒手连击·第${i + 1}击`, weapon: null,
@@ -1398,7 +1435,7 @@
         }
       } else if (id === 'stun') {
         if ((p.kiLeft || 0) < 1) { Combat.line(c, K.warn, '气不够了。'); return; }
-        const t = Combat.pickTarget(c, action.target); if (!t || !Combat.canReach(p, t)) { Combat.line(c, K.warn, Combat.reachHint(p, t)); return; }
+        const t = Combat.pickTarget(c, action.target); if (!t || !Combat.canReachUnarmed(p, t)) { Combat.line(c, K.warn, Combat.unarmedHint(p, t)); return; }
         c.turn.bonus = false; p.kiLeft -= 1;
         Combat.line(c, K.sys, '▶ 震慑拳');
         const res = Combat.attack(c, p, t, {
@@ -1416,6 +1453,12 @@
             Combat.line(c, K.warn, `${t.name}被震慑了。`);
           }
         }
+      } else if (id === 'patientDefense') {
+        // 5e：附赠动作花 1 气采取闪避姿态，攻击你的检定具有劣势
+        if ((p.kiLeft || 0) < 1) { Combat.line(c, K.warn, '气不够了。'); return; }
+        c.turn.bonus = false; p.kiLeft -= 1;
+        p.dodging = true;
+        Combat.line(c, K.sys, '▶ 忍耐防御（1 气）——攻击你的检定具有劣势，直到你的下回合。');
       } else if (id === 'wildShape') {
         if ((p.wildShapeLeft || 0) < 1) { Combat.line(c, K.warn, '野性形态次数用完了——短休或长休才能恢复。'); return; }
         c.turn.bonus = false; p.wildShapeLeft -= 1; p.wildShaped = true;

@@ -117,8 +117,18 @@ try {
   if (!p.flags.acWis) throw new Error("徒手 AC(wis) 未生效");
   const flurry = acts.bonus.find((b) => b.id === 'flurry');
   if (!flurry) throw new Error('无疾风连击');
+  const tgt = () => c.enemies.find((e) => e.hp > 0) && c.enemies.find((e) => e.hp > 0).uid;
+  // 疾风连击是徒手打击：远距时应该被拦下，且不消耗气
+  if (!flurry.blocked) throw new Error('远距时疾风连击应被标记为「够不到」');
+  const kiFar = p.kiLeft;
+  NK.Combat.playerAction(c, { type: 'bonus', id: 'flurry', target: tgt() });
+  if (p.kiLeft !== kiFar) throw new Error('远距时疾风连击不该消耗气');
+  // 拉近到贴身后应该能正常打出
+  c.enemies.forEach((e) => { e.band = 0; });
+  const acts2 = NK.Combat.availableActions(c);
+  if (acts2.bonus.find((b) => b.id === 'flurry').blocked) throw new Error('贴身时疾风连击不该被拦下');
   const before = p.kiLeft;
-  NK.Combat.playerAction(c, { type: 'bonus', id: 'flurry', target: c.enemies.find((e) => e.hp > 0) && c.enemies.find((e) => e.hp > 0).uid });
+  NK.Combat.playerAction(c, { type: 'bonus', id: 'flurry', target: tgt() });
   if (p.kiLeft !== before - 1) throw new Error('疾风连击未消耗气');
   console.log(`武僧气技 OK：ki ${p.kiLeft}/${p.kiMax} ac=${p.ac}(wis) 徒手增伤=${p.mods.monkDmg}`);
 } catch (e) { bad++; console.log('  X 武僧气技 ->', e.message); }

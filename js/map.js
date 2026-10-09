@@ -12,6 +12,36 @@
       return { acts: cfg.acts.map((actDef, ai) => MapGen.generateAct(actDef, ai, diff, rng)) };
     },
 
+    /* 剧本里的幕走完之后继续往下挖：混合所有幕的怪物池，难度靠 actScaling 继续往上叠。
+       没有终点——一局的唯一结局是倒下，或者自己收手。 */
+    generateDeeperAct(run) {
+      const cfg = NK.Data.get('maps');
+      const idx = run.actIndex;
+      const pool = [], elites = [], bosses = [];
+      for (const a of cfg.acts) {
+        for (const x of (a.pool || [])) pool.push(x);
+        for (const x of (a.elites || [])) elites.push(x);
+        if (a.boss) bosses.push(a.boss);
+      }
+      const n = idx - cfg.acts.length;
+      const flavors = [
+        '再往下已经没有路了，只有裂口。你还是下去了。',
+        '空气越来越稠。你的火把在这里烧得很慢。',
+        '墙上有抓痕，很新。你不想知道是谁留下的。',
+        '这里安静得不像话。连你自己的呼吸都显得吵。',
+      ];
+      const def = Object.assign({}, cfg.acts[cfg.acts.length - 1], {
+        id: `deep${idx}`,
+        name: `第 ${idx + 1} 幕 · 更深处`,
+        theme: '没有名字的东西',
+        flavor: flavors[n % flavors.length],
+        pool, elites,
+        boss: bosses[idx % bosses.length],
+        bossName: '更深处的它',
+      });
+      return MapGen.generateAct(def, idx, { id: (run.tier && run.tier.id) || 1 }, run.rng);
+    },
+
     generateAct(actDef, actIndex, diff, rng) {
       const cfg = NK.Data.get('maps');
       const gen = cfg.generation;

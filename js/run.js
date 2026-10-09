@@ -8,8 +8,47 @@
     return NK.Data.get('maps').difficulties.find((d) => d.id === id) || NK.Data.get('maps').difficulties[0];
   }
 
+  /** 每幕难度递增：把「玩家选的难度」与「走到多深」合成为一个战斗系数。
+   *
+   *  进度 t = 幕序号 + 本幕内的层级进度（0~1），所以第 1 幕第一层 t≈0，第 3 幕关底 t≈3。
+   *  各项随 t 线性增长，参数在 data/maps.json 的 actScaling 里，方便调。
+   *
+   *    hp   ×(1 + 0.20 t)     第 1 幕 1.00 → 第 3 幕末 1.60
+   *    dmg  ×(1 + 0.12 t)     1.00 → 1.36
+   *    命中 +(1.0 t)          每深入一幕 +1
+   *    AC   +(0.8 t)          每幕约 +1
+   *    额外敌人概率 +(0.09 t)
+   *    经验 ×(1 + 0.30 t)     深入有回报
+   *    金币 ×(1 + 0.25 t)
+   */
+  function battleTier(run) {
+    const cfg = (NK.Data.get('maps').actScaling) || {};
+    const base = run.tier || {};
+    const act = run.actIndex || 0;
+    let layerProgress = 0;
+    if (cfg.useLayerProgress !== false) {
+      const actData = (run.map && run.map.acts) ? run.map.acts[run.actIndex] : null;
+      const layers = (actData && actData.layers) ? actData.layers.length : 0;
+      const node = Run.node(run);
+      const li = node ? (node.layer || 0) : 0;
+      layerProgress = layers > 1 ? Math.min(1, li / (layers - 1)) : 0;
+    }
+    const t = Math.max(0, act + layerProgress);
+    return Object.assign({}, base, {
+      depth: t,
+      hpMul: (base.hpMul || 1) * (1 + (cfg.hpPerAct || 0) * t),
+      dmgMul: (base.dmgMul || 1) * (1 + (cfg.dmgPerAct || 0) * t),
+      hitAdd: (base.hitAdd || 0) + Math.floor((cfg.hitPerAct || 0) * t),
+      acAdd: Math.floor((cfg.acPerAct || 0) * t),
+      extraChance: (cfg.extraEnemyBase || 0) + (cfg.extraEnemyPerAct || 0) * t,
+      xpMul: (base.xpMul || 1) * (1 + (cfg.xpPerAct || 0) * t),
+      goldMul: (base.goldMul || 1) * (1 + (cfg.goldPerAct || 0) * t),
+    });
+  }
+
   const Run = {
     difficulty,
+    battleTier,
 
     start(config) {
       const rng = config.rng || NK.RNG.make(config.seed);
@@ -45,6 +84,7 @@
       if (!node) return { ok: false, msg: '节点不存在' };
       run.current = nodeId;
       node.visited = true;
+      Run.touchProgress(run);   // 每踏上一个节点就刷新「最远距离」
       switch (node.type) {
         case 'battle': Run.startBattle(run, 'normal'); break;
         case 'elite': Run.startBattle(run, 'elite'); break;
@@ -74,7 +114,9 @@
     /* ---------------- 战斗 ---------------- */
     startBattle(run, kind) {
       const actDef = run.map.acts[run.actIndex].actDef;
-      const enemies = NK.Combat.makeEncounter(actDef, kind, run.tier, run.rng);
+      const tier = battleTier(run);          // 难度 × 当前深度
+      run._battleTier = tier;                // 结算经验/金币时要用同一套系数
+      const enemies = NK.Combat.makeEncounter(actDef, kind, tier, run.rng);
       run.battleKind = kind;
       run.state = 'battle';
       // 每场战斗重置「气 / 狂暴 / 契约魔法」等资源，并清除上一场的狂暴状态
@@ -84,7 +126,7 @@
       if (pp.rageMax > 0) { pp.raging = false; pp.rageLeft = pp.rageMax; }
       if (pp.pactLevel > 0) pp.pactSlots = pp.pactSlotsMax;
       run._combat = NK.Combat.start(run.player, enemies, {
-        rng: run.rng, tier: run.tier, act: run.actIndex + 1, source: kind,
+        rng: run.rng, tier, act: run.actIndex + 1, source: kind,
       });
       if (NK.Codex) NK.Codex.discoverMany('monsters', enemies.map((e) => e.baseId || e.id));
       return run._combat;
@@ -126,8 +168,9 @@
         xp += e.xp;
         gold += run.rng.int((def.gold && def.gold[0]) || 5, (def.gold && def.gold[1]) || 15);
       }
-      xp = Math.round(xp * d.xpMul);
-      gold = Math.round(gold * d.goldMul * (1 + (p.mods.goldMul || 0)));
+      const bt = run._battleTier || d;   // 已含「玩家难度 × 当前深度」的加成
+      xp = Math.round(xp * bt.xpMul);
+      gold = Math.round(gold * bt.goldMul * (1 + (p.mods.goldMul || 0)));
       run.gold += gold;
       lines.push(`战利品：经验 +${xp}，金币 +${gold}（共 ${run.gold}）`);
 
@@ -178,20 +221,53 @@
       return { lines, loot, victory: true };
     },
 
+    /** 打完关底就继续往下。没有「通关」这一说，走得越深算得越远。 */
     advanceAct(run) {
-      if (run.actIndex >= run.map.acts.length - 1) {
-        run.ended = true; run.victory = true; run.state = 'over';
-        return '黑曜大祭司倒下时，整座圣所安静了一瞬。你活下来了。';
-      }
       run.actIndex += 1;
       run.current = null;
       const p = run.player;
       const before = p.hp;
       p.hp = Math.min(p.maxHp, p.hp + Math.round(p.maxHp * 0.3));
       p.slots = p.slotsMax.slice();
-      const act = run.map.acts[run.actIndex];
+      let act = run.map.acts[run.actIndex];
+      let deeper = false;
+      if (!act) { act = NK.MapGen.generateDeeperAct(run); run.map.acts.push(act); deeper = true; }
+      Run.touchProgress(run);
       Run.log(run, `—— ${act.name} ——`);
-      return `你沿着裂缝继续往下。${act.flavor}（回复 ${p.hp - before} 点生命，法术位恢复）`;
+      const head = deeper ? '剧本到这里就写完了，可裂缝还在往下。' : '你沿着裂缝继续往下。';
+      return `${head}${act.flavor}（回复 ${p.hp - before} 点生命，法术位恢复）`;
+    },
+
+    /** 最远距离：以「第几幕 · 第几层」记，取到过的最大值 */
+    progress(run) {
+      const actData = (run.map && run.map.acts) ? run.map.acts[run.actIndex] : null;
+      const node = Run.node(run);
+      const layer = node ? (node.layer || 0) : 0;
+      const layers = actData && actData.layers ? actData.layers.length : 1;
+      return { act: (run.actIndex || 0) + 1, layer, layers, depth: (run.actIndex || 0) + (layers > 1 ? layer / (layers - 1) : 0) };
+    },
+
+    touchProgress(run) {
+      const cur = Run.progress(run);
+      const f = run.farthest;
+      if (!f || cur.depth > f.depth) run.farthest = cur;
+      return run.farthest;
+    },
+
+    progressLabel(pr) {
+      if (!pr) return '—';
+      return `第 ${pr.act} 幕 · 第 ${pr.layer} 层`;
+    },
+
+    /** 主动收手：这一局到此为止，按最远距离记分 */
+    abandon(run) {
+      if (run.ended) return;
+      run.ended = true;
+      run.abandoned = true;
+      run.state = 'over';
+      run.deathCause = '主动离开';
+      Run.touchProgress(run);
+      return Run.settle(run);
     },
 
     /* ---------------- 休整 ---------------- */
@@ -494,10 +570,14 @@
     /* ---------------- 结算 ---------------- */
     settle(run) {
       const p = run.player;
+      Run.touchProgress(run);
+      const far = run.farthest || Run.progress(run);
       const summary = {
-        victory: run.victory,
+        victory: false,                       // 不再有通关：一局的结局只有「倒下」或「收手」
+        abandoned: !!run.abandoned,
         act: run.actIndex + 1,
         actName: run.map.acts[run.actIndex].name,
+        farthest: far, farthestLabel: Run.progressLabel(far), depth: far.depth,
         deathCause: run.deathCause || null,
         level: p.level, className: R.classLabel(p), subclass: p.subclassId ? R.subclassOf(p).name : null,
         race: R.raceDef(p.raceId).name, bg: R.bgDef(p.bgId).name,
@@ -515,6 +595,7 @@
           name: p.name, race: summary.race, className: summary.className, subclass: summary.subclass,
           level: summary.level, difficulty: run.difficulty, difficultyName: difficulty(run.difficulty).name,
           act: summary.act, actName: summary.actName, deathCause: summary.deathCause,
+          farthest: summary.farthest, farthestLabel: summary.farthestLabel, depth: summary.depth,
           kills: summary.kills, elites: summary.elites, bosses: summary.bosses,
           gold: summary.gold, minutes: summary.minutes,
         });

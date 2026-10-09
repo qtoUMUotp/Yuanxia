@@ -1029,6 +1029,14 @@
       "effects": {
         "initBonus": 2
       }
+    },
+    {
+      "id": "inv_vampiric",
+      "name": "汲血魔爆",
+      "desc": "魔能爆命中时为你回复 2 点生命。",
+      "effects": {
+        "vampiric": 2
+      }
     }
   ],
   "metamagics": [

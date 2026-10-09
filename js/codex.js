@@ -37,23 +37,33 @@
     /** 总体战绩：用于标题界面一行摘要 */
     recordStats() {
       const list = Codex.records();
-      const wins = list.filter((r) => r.result === 'victory');
       const levels = list.map((r) => r.level || 0);
-      const turns = wins.map((r) => r.rounds || 0).filter((x) => x > 0);
+      // 没有「通关」这个概念了，成绩只看走得多远
+      const depths = list.map((r) => (r.depth !== undefined ? r.depth : (r.act || 1) - 1)).filter((x) => x >= 0);
+      const bestDepth = depths.length ? Math.max.apply(null, depths) : 0;
+      const bestRec = list.find((r) => (r.depth !== undefined ? r.depth : (r.act || 1) - 1) === bestDepth) || null;
+      const depthLabel = (d) => {
+        const act = Math.floor(d) + 1;
+        return bestRec && bestRec.farthestLabel ? bestRec.farthestLabel : `第 ${act} 幕`;
+      };
       return {
         total: list.length,
-        wins: wins.length,
-        rate: list.length ? Math.round((wins.length / list.length) * 100) : 0,
+        wins: 0,
+        rate: 0,
+        bestDepth,
+        bestDepthLabel: bestRec ? (bestRec.farthestLabel || depthLabel(bestDepth)) : '—',
+        avgDepth: depths.length ? Math.round((depths.reduce((a, b) => a + b, 0) / depths.length) * 10) / 10 : 0,
         bestLevel: levels.length ? Math.max.apply(null, levels) : 0,
         bestKills: list.length ? Math.max.apply(null, list.map((r) => r.kills || 0)) : 0,
-        fastest: turns.length ? Math.min.apply(null, turns) : 0,
+        fastest: 0,
         byClass: (() => {
           const m = {};
           for (const r of list) {
             const k = r.className || '?';
-            m[k] = m[k] || { runs: 0, wins: 0 };
+            m[k] = m[k] || { runs: 0, wins: 0, bestDepth: 0, bestLabel: '—' };
             m[k].runs += 1;
-            if (r.result === 'victory') m[k].wins += 1;
+            const d = r.depth !== undefined ? r.depth : (r.act || 1) - 1;
+            if (d > m[k].bestDepth) { m[k].bestDepth = d; m[k].bestLabel = r.farthestLabel || `第 ${Math.floor(d) + 1} 幕`; }
           }
           return m;
         })(),

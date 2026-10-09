@@ -779,7 +779,11 @@
       const entry = entries.reduce((a, b) => (b.level < a.level ? b : a));
       const before = p.maxHp;
       entry.level += 1;
-      p.lastLeveledClassId = entry.id;   // 记下这一级落在哪个职业，供升级界面「职业进阶」选择
+      // 记下这一级落在哪个职业，供升级界面「职业进阶」选择。
+      // 用队列而不是单值：连续升多级时每一级都要各自决定归属，不能互相覆盖。
+      p.pendingClassLevels = p.pendingClassLevels || [];
+      p.pendingClassLevels.push(entry.id);
+      p.lastLeveledClassId = entry.id;   // 兼容旧存档与单级场景
       Rules.normalizeClasses(p);   // 重新同步 p.level = 总等级、p.classId = 主职
       p.hitDice = p.hitDice || { die: Rules.classDef(p.classId).hitDie, total: 0, left: 0 };
       p.hitDice.total = p.level;
@@ -880,8 +884,11 @@
         }
       }
       out.sort((a, b) => a.level - b.level);
-      // 职业进阶（兼职）：放在最后，先让玩家把子职/属性/法术这类本职成长处理完，再决定这一级落在哪个职业
-      if (p.lastLeveledClassId) out.push({ kind: 'classlevel', level: p.level, classId: p.lastLeveledClassId });
+      // 职业进阶（兼职）：放在最前面 —— 得先决定这一级落在哪个职业，才知道这一级会解锁什么
+      // （子职 / 属性 / 法术的容量都取决于职业等级，反过来选会出现「法师等级退回去但已选了法术」的错位）
+      const cq = p.pendingClassLevels || [];
+      if (cq.length) out.unshift({ kind: 'classlevel', level: p.level, classId: cq[0] });
+      else if (p.lastLeveledClassId) out.unshift({ kind: 'classlevel', level: p.level, classId: p.lastLeveledClassId });
       return out;
     },
 
@@ -1002,14 +1009,17 @@
     },
     /** 职业进阶：把刚获得的等级重新分配到指定职业（确认默认 / 改投其它已有职业 / 新开一个兼职） */
     chooseClassLevel(p, payload) {
-      const fromId = p.lastLeveledClassId;
+      // 连续升多级时每一级各占一个队列位，处理完一个就出队
+      const cq = p.pendingClassLevels || [];
+      const fromId = cq[0] || p.lastLeveledClassId;
       if (!fromId) return { ok: false, msg: '没有可分配的等级' };
-      const targetId = (payload && (payload.newClassId || payload.classId)) || null;
-      if (!targetId) return { ok: false, msg: '请选择要进阶的职业' };
+      // 没指定目标就默认为「确认留在这一级默认落到的职业」，保证队列一定被消耗、不会卡住升级流程
+      const targetId = (payload && (payload.newClassId || payload.classId)) || fromId;
       const from = (p.classes || []).find((e) => e.id === fromId);
       if (!from || from.level < 1) return { ok: false, msg: '来源职业等级不足' };
+      const settle = () => { if (cq.length) cq.shift(); p.lastLeveledClassId = cq[0] || null; };
       if (targetId === fromId) {
-        p.lastLeveledClassId = null;
+        settle();
         return { ok: true, msg: `确认进阶：${Rules.classDef(fromId).name} 提升 1 级（现为 ${from.level} 级）。` };
       }
       let to = (p.classes || []).find((e) => e.id === targetId);
@@ -1023,7 +1033,7 @@
       from.level -= 1;
       to.level += 1;
       if (from.level <= 0) p.classes = p.classes.filter((e) => !(e.id === fromId && e.level <= 0));
-      p.lastLeveledClassId = null;
+      settle();
       Rules.normalizeClasses(p);
       Rules.recalc(p);
       const profMsg = gotProfs.length ? `　新职业带来熟练：${gotProfs.join('、')}。` : '';

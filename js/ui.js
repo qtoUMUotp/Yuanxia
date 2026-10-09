@@ -385,21 +385,80 @@
   }
 
   /* ================= 通用组件 ================= */
-  function slotText(p) {
-    if (!p.slotsMax || !p.slotsMax.some((x) => x > 0)) return '';
-    return p.slots.map((n, i) => n > 0 ? `<span class="tag blue">${NK.Data.get('rules').slotLevelNames[i]} ${n}/${p.slotsMax[i]}</span>` : '').join('');
+
+  /** 血条：按剩余比例自动分段着色（>60 绿 / >25 黄 / 否则红） */
+  function hpBar(cur, max, cls) {
+    const pct = Math.max(0, Math.min(100, Math.round((cur / Math.max(1, max)) * 100)));
+    const lvl = pct > 60 ? 'ok' : pct > 25 ? 'mid' : 'low';
+    return `<div class="bar ${cls || ''}"><i class="${lvl}" style="width:${pct}%"></i></div>`;
+  }
+
+  /** 法术位圆点组：一环一组，亮 = 还有，暗 = 已用。邪术环单独用紫色 */
+  function slotPips(p) {
+    const LN = NK.Data.get('rules').slotLevelNames || [];
+    const grp = (label, left, max) => {
+      let s = `<span class="grp" title="${esc(label)}"><u>${esc(label)}</u>`;
+      for (let i = 0; i < max; i++) s += `<i class="${i < left ? 'on' : ''}"></i>`;
+      return s + '</span>';
+    };
+    let out = '';
+    if (p.slotsMax && p.slotsMax.some((x) => x > 0)) {
+      out += '<span class="pips">';
+      p.slotsMax.forEach((m, i) => { if (m > 0) out += grp(LN[i] || ('L' + (i + 1)), p.slots[i] || 0, m); });
+      out += '</span>';
+    }
+    if (p.pactLevel && p.pactSlotsMax) {
+      out += `<span class="pips pact" title="邪术环">${grp('邪', p.pactSlots || 0, p.pactSlotsMax)}</span>`;
+    }
+    return out;
+  }
+  /** 旧名兼容：原来返回平铺 tag，现在统一走圆点 */
+  function slotText(p) { return slotPips(p); }
+
+  /** 职业资源标签（气 / 狂暴 / 圣疗池 / 卓越骰…） */
+  function resourceTags(p) {
+    const t = [];
+    if (p.layPool !== undefined) t.push(`<span class="tag gold">圣疗池 ${p.layPool}</span>`);
+    if (p.superiorityLeft !== undefined) t.push(`<span class="tag gold">卓越骰 ${p.superiorityLeft}</span>`);
+    if (p.kiMax > 0) t.push(`<span class="tag gold">气 ${p.kiLeft}/${p.kiMax}</span>`);
+    if (p.sorceryMax > 0) t.push(`<span class="tag gold">术法点 ${p.sorceryLeft}/${p.sorceryMax}</span>`);
+    if (p.flags && p.flags.rage) t.push(`<span class="tag gold">狂暴 ${p.rageLeft || 0}/${p.rageMax}</span>`);
+    return t.join('');
+  }
+
+  /** 顶栏 HUD：一局里始终可见的幕信息 + 关键资源（吸顶） */
+  function hudBar(run, opt) {
+    opt = opt || {};
+    const p = run.player;
+    if (!p) return '';
+    const act = (run.map && run.map.acts) ? run.map.acts[run.actIndex] : null;
+    const diff = NK.Run.difficulty ? NK.Run.difficulty(run.difficulty) : null;
+    // 战斗里金币/食物用不上，只留生命骰与法术位
+    const right = opt.minimal
+      ? `<span class="tag green">生命骰 ${p.hitDice.left}/${p.hitDice.total}</span>${slotPips(p)}`
+      : `<span class="tag gold">金币 ${run.gold}</span><span class="tag orange">食物 ${run.food}</span><span class="tag green">生命骰 ${p.hitDice.left}/${p.hitDice.total}</span>${slotPips(p)}`;
+    return `<div class="hud">
+      <span class="hud-title">${esc(opt.title || (act ? act.name : GAME_NAME))}</span>
+      ${act && !opt.title ? `<span class="tag">${esc(act.theme)}</span>` : ''}
+      ${diff ? `<span class="tag blue">${esc(diff.name)}</span>` : ''}
+      <span class="hud-right">${right}</span></div>`;
   }
 
   function playerSummary(p) {
-    const hpPct = Math.max(0, Math.round((p.hp / p.maxHp) * 100));
+    const stats = [
+      ['gold', '命中', fmt(R.attackBonus(p))],
+      ['blue', 'AC', p.ac],
+      ['', '先攻', fmt(R.initiative(p))],
+      ['', '熟练', fmt(p.prof)],
+    ].map(([c, k, v]) => `<span class="stat ${c}"><em>${k}</em><b>${v}</b></span>`).join('');
     return `
       <div class="spread">
         <div><b>${esc(p.name)}</b><span class="dim small">　${esc(R.raceDef(p.raceId).name)} · ${esc(R.classLabel(p))}</span></div>
-        <div class="small"><span class="tag gold">⚔ ${fmt(R.attackBonus(p))}</span><span class="tag blue">AC ${p.ac}</span><span class="tag">先攻 ${fmt(R.initiative(p))}</span><span class="tag">熟练 ${fmt(p.prof)}</span></div>
+        <div class="stats">${stats}</div>
       </div>
-      <div class="bar" style="margin-top:6px"><i style="width:${hpPct}%"></i></div>
+      ${hpBar(p.hp, p.maxHp)}
       <div class="small dim">HP ${p.hp}/${p.maxHp}${p.tempHp ? `<span class="blue">（临时 ${p.tempHp}）</span>` : ''}${p.wardHp ? `<span class="blue">（结界 ${p.wardHp}）</span>` : ''}　生命骰 ${p.hitDice.left}/${p.hitDice.total}（d${p.hitDice.die}）　经验 ${p.xp}${R.xpNeeded(p.level) !== null ? '/' + R.xpNeeded(p.level) : '（满级）'}</div>
-      <div style="margin-top:4px">${slotText(p)}${p.layPool !== undefined ? `<span class="tag gold">圣疗池 ${p.layPool}</span>` : ''}${p.superiorityLeft !== undefined ? `<span class="tag gold">卓越骰 ${p.superiorityLeft}</span>` : ''}${p.kiMax > 0 ? `<span class="tag gold">气 ${p.kiLeft}/${p.kiMax}</span>` : ''}${p.flags && p.flags.rage ? `<span class="tag gold">狂暴 ${p.rageLeft}/${p.rageMax}</span>` : ''}${p.pactLevel ? `<span class="tag gold">邪术环 ${p.pactSlots}/${p.pactSlotsMax}</span>` : ''}</div>`;
+      <div class="small" style="margin-top:5px">${slotPips(p)}${resourceTags(p)}</div>`;
   }
 
   function condTags(t) {
@@ -415,41 +474,102 @@
   }
 
   /* ================= 地图 ================= */
+  const MAP_LAYER_H = 78;   // 每层占的高度（px），SVG 连线用它换算 y 坐标
+
   function mapScreen() {
     const run = App.run;
     const act = run.map.acts[run.actIndex];
     const avail = NK.MapGen.available(run).map((n) => n.id);
     const meta = NK.Data.get('maps').nodeMeta;
-    const layers = act.layers.map((layer) => `<div class="layer">${layer.map((n) => {
-      const visible = NK.MapGen.isVisible(run, n);
-      const m = meta[n.type] || { name: '?', icon: '?', color: '#888' };
-      const cls = ['node'];
-      if (n.done) cls.push('done');
-      if (n.visited) cls.push('visited');
-      if (avail.includes(n.id)) cls.push('avail');
-      if (!visible) cls.push('hidden');
-      return `<div class="${cls.join(' ')}" ${avail.includes(n.id) ? `data-act="node" data-id="${n.id}"` : ''} style="${avail.includes(n.id) ? `border-color:${m.color}` : ''}">
-        <span class="icon" style="color:${visible ? m.color : '#4a443c'}">${visible ? m.icon : '·'}</span>
-        <span class="node-label" style="${visible ? '' : 'color:#4a443c'}">${esc(visible ? m.name : '未知')}</span></div>`;
-    }).join('')}</div>`).join('');
+    const curNode = run.current ? NK.MapGen.nodeById(act, run.current) : null;
+
+    // 先算出每个节点的坐标：层内按序号均分横向位置，纵向按层固定间距
+    const pos = {};
+    act.layers.forEach((layer, li) => {
+      const n = layer.length;
+      layer.forEach((node, ni) => {
+        pos[node.id] = { x: ((ni + 1) / (n + 1)) * 100, y: li * MAP_LAYER_H + MAP_LAYER_H / 2 };
+      });
+    });
+
+    // 连线：只画「已经走过的路」和「下一步能走的路」，其余留白，避免一团乱麻
+    const links = [];
+    for (const layer of act.layers) {
+      for (const n of layer) {
+        const a = pos[n.id];
+        if (!a) continue;
+        for (const id of (n.next || [])) {
+          const b = pos[id];
+          if (!b) continue;
+          const taken = n.done && ((NK.MapGen.nodeById(act, id) || {}).visited);
+          const open = n.done && avail.includes(id);
+          const cls = taken ? 'taken' : open ? 'open' : 'dim';
+          links.push(`<line class="link ${cls}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" vector-effect="non-scaling-stroke"/>`);
+        }
+      }
+    }
+
+    const rows = act.layers.map((layer, li) => {
+      const cells = layer.map((n) => {
+        const visible = NK.MapGen.isVisible(run, n);
+        const m = meta[n.type] || { name: '?', icon: '?', color: '#888' };
+        const canGo = avail.includes(n.id);
+        const here = curNode && curNode.id === n.id;
+        const cls = ['node'];
+        if (n.done) cls.push('done');
+        if (n.visited) cls.push('visited');
+        if (canGo) cls.push('avail');
+        if (!visible) cls.push('hidden');
+        if (here) cls.push('here');
+        const style = `left:${pos[n.id].x}%;${canGo ? `border-color:${m.color};` : ''}`;
+        return `<div class="${cls.join(' ')}" ${canGo ? `data-act="node" data-id="${n.id}"` : ''} style="${style}"
+            title="${esc(m.desc || m.name)}">
+          <span class="icon" style="color:${visible ? m.color : '#4a443c'}">${visible ? m.icon : '·'}</span>
+          <span class="node-label" style="${visible ? '' : 'color:#4a443c'}">${esc(visible ? m.name : '未知')}</span>
+          ${here ? '<span class="you">你在这</span>' : ''}</div>`;
+      }).join('');
+      const isLast = li === act.layers.length - 1;
+      return `<div class="layer"><span class="layer-no">${isLast ? '底' : li + 1}</span>${cells}</div>`;
+    }).join('');
+
+    const svgH = act.layers.length * MAP_LAYER_H;
+    const map = `<div class="mapwrap" style="height:${svgH}px">
+      <svg class="maplinks" viewBox="0 0 100 ${svgH}" preserveAspectRatio="none">${links.join('')}</svg>
+      ${rows}
+    </div>`;
+
+    const pr = NK.Run.progress(run);
+    const far = run.farthest || pr;
+    const stopBtn = App.confirmAbandon
+      ? `<button class="sm danger" data-act="map:abandon">确认收手（记到 ${esc(NK.Run.progressLabel(far))}）</button>
+         <button class="sm ghost" data-act="map:cancel">再想想</button>`
+      : `<button class="sm ghost" data-act="map:abandon">收手，就走到这</button>`;
 
     return `
-      <div class="panel tight"><div class="spread">
-        <div><b class="gold">${esc(act.name)}</b><span class="tag">${esc(act.theme)}</span><span class="tag blue">${esc(NK.Run.difficulty(run.difficulty).name)}</span></div>
-        <div><span class="tag gold">金币 ${run.gold}</span><span class="tag orange">食物 ${run.food}</span><span class="tag green">生命骰 ${run.player.hitDice.left}/${run.player.hitDice.total}</span>${slotText(run.player)}</div>
-      </div></div>
+      ${hudBar(run)}
       <div class="panel">${playerSummary(run.player)}${condTags(run.player) ? `<div style="margin-top:4px">${condTags(run.player)}</div>` : ''}
-        <div style="margin-top:8px">
-          <button class="sm" data-act="open:sheet">人物卡</button>
-          <button class="sm" data-act="open:bag">背包</button>
+        <div class="actions">
+          <button class="sm" data-act="open:sheet">人物卡 <span class="kbd">C</span></button>
+          <button class="sm" data-act="open:bag">背包 <span class="kbd">E</span></button>
           <button class="sm" data-act="open:help">规则</button>
           <button class="sm ghost" data-act="save:quit">保存并回到标题</button>
+          ${stopBtn}
         </div></div>
       <div class="panel">
-        <div class="spread"><h3 style="margin:0">路线</h3><span class="hint">点击亮起的节点前进</span></div>
-        <div style="margin-top:12px">${layers}</div>
+        <div class="section"><h3>路线</h3>
+          <span class="hint">${esc(act.name)}　当前 ${esc(NK.Run.progressLabel(pr))}　最远 ${esc(NK.Run.progressLabel(far))}</span></div>
+        <div class="maplegend">
+          <span><i class="dot open"></i>可走</span>
+          <span><i class="dot taken"></i>已走过</span>
+          <span><i class="dot here"></i>你在这里</span>
+          <span><i class="dot hidden"></i>还没看清</span>
+        </div>
+        <div style="margin-top:8px">${map}</div>
+        <div class="small dim" style="margin-top:8px">越往下越深，怪物也越硬。没有终点——走不动了或者自己收手，这一局就记到这里。</div>
       </div>
-      <div class="panel"><h3>旅途记录</h3>${run.log.slice(-6).map((l) => `<div class="small dim">${esc(l.t)}</div>`).join('') || '<div class="dim small">还没有记录。</div>'}</div>`;
+      <div class="panel">
+        <div class="section"><h3>旅途记录</h3></div>
+        ${run.log.slice(-6).map((l) => `<div class="small dim">${esc(l.t)}</div>`).join('') || '<div class="dim small">还没有记录。</div>'}</div>`;
   }
 
   /* ================= 战斗 ================= */
@@ -470,7 +590,11 @@
     const isMyTurn = c.order[c.turnIndex] && c.order[c.turnIndex].ref === p && !c.over;
 
     const enemies = c.enemies.map((e) => {
-      const pct = Math.max(0, Math.round((e.hp / e.maxHp) * 100));
+      const rank = e.rank === 'boss' ? '关底' : e.rank === 'elite' ? '精英' : '普通';
+      const rankCls = e.rank === 'boss' ? 'red' : e.rank === 'elite' ? 'gold' : '';
+      const estats = `<span class="stat gold"><em>命中</em><b>${fmt(e.atk.bonus)}</b></span>`
+        + `<span class="stat blue"><em>AC</em><b>${NK.Combat.acOf(c, e)}</b></span>`
+        + `<span class="stat"><em>伤害</em><b>${esc(e.atk.dice)}</b></span>`;
       const traits = (e.traits || []).map((t) => { const d = NK.Data.get('monsters').traits[t.effect]; return `<span class="tag" title="${esc(d ? d.desc : '')}">${esc(d ? d.name : t.name)}</span>`; }).join('');
       const defenses = [
         (e.resist || []).length ? `<span class="tag blue">抗性 ${e.resist.join('/')}</span>` : '',
@@ -480,8 +604,11 @@
       const it = e.hp > 0 ? (e.intent || NK.Combat.planIntent(c, e)) : null;
       const intentHtml = it ? `<div class="intent ${it.tone}"><b>意图</b>　${esc(it.name)}<span class="dim"> · ${esc(it.detail || '')}</span></div>` : '';
       return `<div class="enemy ${App.targetUid === e.uid ? 'sel' : ''} ${e.hp <= 0 ? 'dead' : ''}" ${e.hp > 0 ? `data-act="target" data-uid="${e.uid}"` : ''}>
-        <div class="spread"><b>${esc(e.name)}</b><span class="small dim">${e.rank === 'boss' ? '关底' : e.rank === 'elite' ? '精英' : '普通'}　命中 ${fmt(e.atk.bonus)}　AC ${NK.Combat.acOf(c, e)}　${esc(e.atk.dice)}</span></div>
-        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="enemy-head">
+          <span class="enemy-name">${esc(e.name)} <span class="tag ${rankCls}">${rank}</span></span>
+          <span class="stats">${estats}</span>
+        </div>
+        ${hpBar(e.hp, e.maxHp)}
         <div class="small dim">HP ${Math.max(0, e.hp)}/${e.maxHp}${e.tempHp ? `（临时 ${e.tempHp}）` : ''}${e.mirrorLeft ? `　<span class="blue">镜像 ${e.mirrorLeft}</span>` : ''}</div>
         <div class="small">${traits}${defenses}${condTags(e)}</div>${intentHtml}</div>`;
     }).join('');
@@ -489,23 +616,44 @@
     const opts = [];
     for (const s of acts.spells) if (s.ok) opts.push({ group: '法术', kind: 'spell', id: s.spell.id, slot: s.slot, label: s.label, hint: s.spell.desc, need: s.spell.action === '附赠动作' ? 'bonus' : 'action' });
     for (const s of acts.upcast) opts.push({ group: '升环施法', kind: 'spell', id: s.spell.id, slot: s.slot, label: s.label, hint: s.spell.desc, need: 'action' });
-    for (const b of acts.bonus) opts.push({ group: '附赠动作', kind: 'bonus', id: b.id, label: b.label, need: 'bonus' });
+    for (const b of acts.bonus) opts.push({ group: '附赠动作', kind: 'bonus', id: b.id, label: b.label, need: 'bonus', blocked: b.blocked });
     for (const x of acts.items) opts.push({ group: '物品', kind: 'item', index: x.index, label: x.item.name, hint: x.item.desc, need: 'action' });
     const usable = opts.filter((o) => (o.need === 'bonus' ? c.turn.bonus : c.turn.action));
     if (App.selAction === undefined || App.selAction >= usable.length) App.selAction = 0;
-    // 记住上一回合用的那一手：还在列表里就自动选中，不用每回合重新挑
+    // 记住上一回合用的那一手：每个「玩家回合」只应用一次。
+    // 否则玩家在下拉框里改选后，下一次 render 又会被记忆覆盖回去 —— 表现为「改不动、卡死在这一手上」。
     let remembered = null;
-    if (App.lastActionKey) {
+    const turnKey = `${c.round}:${c.turnIndex}`;
+    if (App.lastActionKey && !c.over) {
       const hit = usable.findIndex((o) => actionKey(o) === App.lastActionKey);
-      if (hit >= 0) { App.selAction = hit; remembered = usable[hit].label; }
+      if (hit >= 0 && App._memTurn !== turnKey) { App.selAction = hit; remembered = usable[hit].label; }
+      if (hit >= 0) App._memTurn = turnKey;
+    }
+    // 选中的那一手现在够不到（敌人被拉开距离了），就跳到第一个还能用的
+    if (usable[App.selAction] && usable[App.selAction].blocked) {
+      const firstOk = usable.findIndex((o) => !o.blocked);
+      if (firstOk >= 0) { App.selAction = firstOk; remembered = null; }
     }
     const groups = {};
     usable.forEach((o, i) => { (groups[o.group] = groups[o.group] || []).push({ o, i }); });
     const selHtml = usable.length ? `<select data-act="sel:action" class="selbox">
-      ${Object.keys(groups).map((g) => `<optgroup label="${esc(g)}">${groups[g].map(({ o, i }) => `<option value="${i}" ${i === App.selAction ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}</optgroup>`).join('')}
+      ${Object.keys(groups).map((g) => `<optgroup label="${esc(g)}">${groups[g].map(({ o, i }) => `<option value="${i}" ${i === App.selAction ? 'selected' : ''} ${o.blocked ? 'disabled' : ''} title="${esc(o.blocked || '')}">${esc(o.label)}${o.blocked ? '（够不到）' : ''}</option>`).join('')}</optgroup>`).join('')}
     </select><button class="primary" data-act="b:do" title="${esc((usable[App.selAction] || {}).hint || '')}">执行</button>` : '<span class="dim small">本回合已无可用的动作</span>';
 
-    const actionBtns = isMyTurn && !p.dying && !c.over ? `
+    // 快捷动作格：按钮与键盘快捷键一一对应（1 攻击 / 2-5 前四个法术 / Q 闪避 / 空格 结束）
+    let quickHtml = '';
+    if (isMyTurn && !p.dying && !c.over) {
+      const cells = [];
+      cells.push(`<button class="primary" data-act="b:attack" ${c.turn.action && acts.canReachFront ? '' : 'disabled'} title="${esc(acts.canReachFront ? '普通攻击' : (acts.front ? NK.Combat.reachHint(p, acts.front) : ''))}"><span class="kbd">1</span>攻击${p.mods.extraAttack ? ' ×' + (1 + p.mods.extraAttack) : ''}</button>`);
+      acts.spells.filter((s) => s.ok).slice(0, 4).forEach((s, i) => {
+        cells.push(`<button data-act="b:cast" data-id="${s.spell.id}" data-slot="${s.slot}" ${c.turn.action ? '' : 'disabled'} title="${esc(s.spell.desc || '')}"><span class="kbd">${i + 2}</span>${esc(s.label)}</button>`);
+      });
+      cells.push(`<button data-act="b:dodge" ${c.turn.action ? '' : 'disabled'} title="攻击你的检定具有劣势"><span class="kbd">Q</span>闪避</button>`);
+      cells.push(`<button data-act="b:end"><span class="kbd">␣</span>结束回合</button>`);
+      quickHtml = `<div class="btn-grid">${cells.join('')}</div>`;
+    }
+
+    const actionBtns = isMyTurn && !p.dying && !c.over ? `<div class="actbar">
       <div class="distance">
         <span class="tag ${acts.move.text === '近身' ? 'red' : acts.move.text === '远距' ? 'blue' : 'gold'}">距离 ${acts.move.text}</span>
         <button class="sm" data-act="b:move" data-dir="in" ${acts.move.canIn ? '' : 'disabled'} title="拉近一档（每回合一次，不消耗动作）">接近</button>
@@ -513,16 +661,12 @@
         <button class="sm ghost" data-act="b:delay" ${c.delayedThisRound ? 'disabled' : ''} title="把自己移到本回合最后，看清敌人动作再出手">延后行动</button>
         ${acts.move.moved ? '<span class="hint">本回合已移动</span>' : ''}
       </div>
-      <div class="actions">
-        <button class="primary" data-act="b:attack" ${c.turn.action && acts.canReachFront ? '' : 'disabled'} title="${esc(acts.canReachFront ? '' : (acts.front ? NK.Combat.reachHint(p, acts.front) : ''))}">攻击${p.mods.extraAttack ? '（×' + (1 + p.mods.extraAttack) + '）' : ''}</button>
-        ${selHtml}
-        <button data-act="b:dodge" ${c.turn.action ? '' : 'disabled'} title="攻击你的检定具有劣势">闪避</button>
-        <button data-act="b:end">结束回合</button>
-      </div>
+      ${quickHtml}
+      ${usable.length ? `<div class="actions"><span class="hint">全部动作</span>${selHtml}</div>` : ''}
       ${!acts.canReachFront && acts.front ? `<div class="small red" style="margin-top:4px">${esc(NK.Combat.reachHint(p, acts.front))}</div>` : ''}
       <div class="small dim" style="margin-top:6px">动作：${c.turn.action ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}　附赠动作：${c.turn.bonus ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}
-        　${remembered ? `<span class="tag green">记住了上一手：${esc(remembered)}</span>` : App.lastActionKey === 'attack' ? '<span class="tag green">记住了上一手：攻击（按 1）</span>' : ''}
-        　<span class="hint">快捷键：1 攻击　2-9 法术　Enter 执行　Q 闪避　空格 结束回合</span></div>` : `<div class="actions">${c.over ? '<button class="primary" data-act="b:continue">继续</button>' : p.dying ? '<button data-act="b:pass">等待死亡豁免</button>' : '<span class="dim small">敌人的回合……</span>'}</div>`;
+        　${remembered ? `<span class="tag green">记住了上一手：${esc(remembered)}</span>` : App.lastActionKey === 'attack' ? '<span class="tag green">记住了上一手：攻击</span>' : ''}
+        　<span class="hint kbdhint">快捷键 1 攻击 · 2-9 法术 · Enter 执行 · Q 闪避 · 空格 结束回合 · E 背包 · C 人物卡</span></div></div>` : `<div class="actions">${c.over ? '<button class="primary" data-act="b:continue">继续</button>' : p.dying ? '<button data-act="b:pass">等待死亡豁免</button>' : '<span class="dim small">敌人的回合……</span>'}</div>`;
 
     const LOG_TAIL = 9;
     const folded = !App.logFull && c.log.length > LOG_TAIL + 3;
@@ -545,31 +689,44 @@
       const pct = isP ? Math.round((ref.hp / ref.maxHp) * 100) : Math.round((Math.max(0, ref.hp) / ref.maxHp) * 100);
       return `<div class="orderchip ${active ? 'on' : ''} ${dead ? 'dead' : ''} ${isP ? 'me' : ''}">
         <div class="nm">${esc(o.name)}${isP ? '' : ` <span class="dim">${NK.Combat.bandName(ref.band)}</span>`}</div>
-        <div class="bar mini"><i style="width:${pct}%"></i></div></div>`;
+        ${hpBar(isP ? ref.hp : Math.max(0, ref.hp), ref.maxHp, 'mini')}</div>`;
     }).join('')}</div>`;
 
+    const kind = c.source === 'boss' ? '关底战' : c.source === 'elite' ? '精英战' : '战斗';
     return `
-      <div class="panel tight"><div class="spread">
-        <div><span class="tag red">${c.source === 'boss' ? '关底战' : c.source === 'elite' ? '精英战' : '战斗'}</span> 第 ${c.round} 回合</div>
-        <div class="small dim">先攻：${c.order.map((o) => o.name).join(' > ')}</div>
-      </div>${orderBar}</div>
+      ${hudBar(run, { title: kind + ' · 第 ' + c.round + ' 回合', minimal: true })}
+      <div class="panel tight">
+        ${orderBar}
+        <div class="tiny dim" style="margin-top:6px">先攻 ${c.order.map((o) => o.name).join(' > ')}</div>
+      </div>
       <div class="row">
         <div class="col">
-          <div class="panel tight"><h3 style="margin-bottom:6px">敌人</h3>${enemies}</div>
-          <div class="panel tight"><h3 style="margin-bottom:6px">你</h3>${playerSummary(p)}${condTags(p) ? `<div style="margin-top:4px">${condTags(p)}</div>` : ''}
-            ${(c.allies && c.allies.length) ? `<div style="margin-top:6px"><div class="hint">你的召唤物（每回合自动出击，不占你的动作）</div>${c.allies.map((a) => {
-              const pct = Math.max(0, Math.round((a.hp / a.maxHp) * 100));
-              return `<div class="enemy" style="margin-top:4px">
-                <div class="spread"><b>${esc(a.name)}</b><span class="small dim">命中 ${fmt(a.atk.bonus)}　AC ${a.ac}　${esc(a.atk.dice)} ${esc(a.atk.type)}</span></div>
-                <div class="bar"><i style="width:${pct}%"></i></div>
-                <div class="small dim">HP ${Math.max(0, a.hp)}/${a.maxHp}　剩余 ${a.turnsLeft} 回合${p.concentration === a.spellId ? '　<span class="tag blue">专注维持中</span>' : ''}</div>
-                ${condTags(a)}</div>`;
-            }).join('')}</div>` : ''}
-            <div class="small dim" style="margin-top:4px">右手：${itemLine(p.items.mainHand)}　左手：${itemLine(p.items.offHand)}　上身：${itemLine(p.items.body)}　戒指 ${R.ringCount(p)}/${R.ringCap(p)}${R.interference(p) > 0 ? '（干涉 -' + R.interference(p) + '）' : ''}</div></div>
+          <div class="panel tight">
+            <div class="section"><h3>敌人</h3><span class="hint">点击卡片切换目标</span></div>
+            <div class="enemies">${enemies}</div></div>
+          <div class="panel tight">
+            <div class="section"><h3>你</h3></div>
+            ${playerSummary(p)}${condTags(p) ? `<div style="margin-top:4px">${condTags(p)}</div>` : ''}
+            ${(c.allies && c.allies.length) ? `<div style="margin-top:8px"><div class="hint">你的召唤物（每回合自动出击，不占你的动作）</div>${c.allies.map((a) => `
+              <div class="enemy" style="margin-top:5px">
+                <div class="enemy-head"><span class="enemy-name">${esc(a.name)}</span>
+                  <span class="stats"><span class="stat gold"><em>命中</em><b>${fmt(a.atk.bonus)}</b></span><span class="stat blue"><em>AC</em><b>${a.ac}</b></span></span></div>
+                ${hpBar(a.hp, a.maxHp)}
+                <div class="small dim">HP ${Math.max(0, a.hp)}/${a.maxHp}　${esc(a.atk.dice)} ${esc(a.atk.type)}　剩余 ${a.turnsLeft} 回合${p.concentration === a.spellId ? '　<span class="tag blue">专注维持中</span>' : ''}</div>
+                ${condTags(a)}</div>`).join('')}</div>` : ''}
+            <div class="slots" style="margin-top:9px">
+              <div><em>右手</em>${itemLine(p.items.mainHand)}</div>
+              <div><em>左手</em>${itemLine(p.items.offHand)}</div>
+              <div><em>上身</em>${itemLine(p.items.body)}</div>
+              <div><em>戒指</em>${R.ringCount(p)}/${R.ringCap(p)}${R.interference(p) > 0 ? ` <span class="red">干涉 -${R.interference(p)}</span>` : ''}</div>
+            </div></div>
         </div>
         <div class="col" style="flex:1.7 1 380px">
-          <div class="log">${folded ? '<div class="dim small">……</div>' : ''}${logHtml}</div>
-          ${logBar}
+          <div class="panel tight">
+            <div class="section"><h3>战况</h3></div>
+            <div class="log">${folded ? '<div class="dim small">……</div>' : ''}${logHtml}</div>
+            ${logBar}
+          </div>
           ${resultBox || actionBtns}
         </div>
       </div>`;
@@ -595,10 +752,14 @@
       <ul>${res.lines.map((l) => `<li class="small gold">${esc(l)}</li>`).join('')}</ul>
       <div style="margin-top:10px"><button class="primary" data-act="ev:next">继续前进</button></div>` : '';
     return `
-      <div class="panel tight"><div class="spread"><div><span class="tag purple">事件</span> ${esc(ev.name)}</div>
-        <div class="small dim">${esc(run.map.acts[run.actIndex].name)}</div></div></div>
+      ${hudBar(run, { title: '事件 · ' + ev.name })}
       <div class="panel">${playerSummary(run.player)}</div>
-      <div class="panel"><p style="font-size:16px">${esc(ev.text)}</p><hr>${options}${resultBox}</div>`;
+      <div class="panel">
+        <div class="section"><h3>${esc(ev.name)}</h3></div>
+        <p style="font-size:16px;margin-top:8px">${esc(ev.text)}</p>
+        <hr>
+        <div class="section"><h3>${res ? '结果' : '你要怎么做'}</h3></div>
+        ${options}${resultBox}</div>`;
   }
 
   /* ================= 商店 ================= */
@@ -606,15 +767,15 @@
     const run = App.run;
     const s = run.shop;
     if (!s) return '<div class="panel">这里没有商店。</div>';
-    const sec = (title, list, kind) => `<h3>${title}</h3>${list.map((e) => `
+    const sec = (title, list, kind) => list.length ? `<div class="section"><h3>${title}</h3></div>${list.map((e) => `
       <div class="spread choice">
         <div>${kind === 'gear' ? itemLine(e.item) : `<b>${esc(e.item.name)}</b> <span class="hint">${esc(e.item.desc || '')}</span>`}</div>
-        <div><span class="tag gold">${e.price} 金</span><button class="sm" data-act="buy" data-id="${e.id}" ${e.sold || run.gold < e.price ? 'disabled' : ''}>${e.sold ? '已售出' : '购买'}</button></div>
-      </div>`).join('')}`;
+        <div class="nowrap"><span class="tag gold">${e.price} 金</span><button class="sm" data-act="buy" data-id="${e.id}" ${e.sold || run.gold < e.price ? 'disabled' : ''}>${e.sold ? '已售出' : '购买'}</button></div>
+      </div>`).join('')}` : '';
     return `
-      <div class="panel tight"><div class="spread"><div><span class="tag gold">商店</span> 地下交易点</div><div><span class="tag gold">金币 ${run.gold}</span><span class="tag orange">食物 ${run.food}</span></div></div></div>
-      <div class="panel">${sec('装备', s.items, 'gear')}<hr>${sec('药剂与卷轴', s.consumables, 'consumable')}<hr>${sec('服务', s.services, 'service')}
-        <div class="center" style="margin-top:14px"><button class="primary" data-act="shop:leave">离开</button></div></div>`;
+      ${hudBar(run, { title: '商店 · 地下交易点' })}
+      <div class="panel">${sec('装备', s.items, 'gear')}${sec('药剂与卷轴', s.consumables, 'consumable')}${sec('服务', s.services, 'service')}
+        <div class="center" style="margin-top:14px"><button class="primary" data-act="shop:leave">离开商店</button></div></div>`;
   }
 
   /* ================= 休整 ================= */
@@ -638,14 +799,13 @@
     if (p.flags.layOnHands) rows.push(['圣疗池', `${p.layPool}/${p.level * p.flags.layOnHands}`, p.layPool === 0 ? '需长休' : '可用']);
     const list = (arr) => `<ul style="margin:4px 0 0 16px">${arr.map((x) => `<li class="small">${x}</li>`).join('')}</ul>`;
     return `
-      <div class="panel tight"><div class="spread"><div><span class="tag green">营地</span> ${esc(run.map.acts[run.actIndex].name)}</div>
-        <div class="small dim"><b>每个营地只能休息一次</b>，选完就不能改</div></div></div>
+      ${hudBar(run, { title: '营地 · ' + run.map.acts[run.actIndex].name })}
       <div class="panel"><p>你找到一处背风的石缝。火升起来之后，才发现自己的手一直在抖。</p>
-        <h3 style="margin-top:10px">现在的你</h3>
+        <div class="section" style="margin-top:10px"><h3>现在的你</h3><span class="hint">每个营地只能休息一次，选完就不能改</span></div>
         <table>${rows.map((r) => `<tr><td style="width:76px" class="hint">${r[0]}</td><td class="mono">${r[1]}</td><td class="small">${r[2]}</td></tr>`).join('')}</table>
         ${condTags(p) ? `<div style="margin-top:6px">${condTags(p)}</div>` : ''}</div>
       <div class="panel">
-        <h3>你要做什么？</h3>
+        <div class="section"><h3>你要做什么？</h3></div>
         <div class="cards">
           <div class="card ${o.short.ok ? '' : 'locked'}">
             <h3>短休　<span class="tag green">${esc(o.short.cost)}</span></h3>
@@ -711,18 +871,18 @@
         <h3>${esc(s.name)} <span class="tag blue">${LN[s.level - 1]}</span></h3>
         <div class="small dim">${esc((s.desc || '').slice(0, 40))}</div></div>`;
     return `
-      <div class="panel tight"><div class="spread"><div><span class="tag green">长休</span> 重新准备法术</div>
-        <div class="small dim">已选 <b class="${over ? 'red' : ''}">${App.prepSel.length}/${cap}</b></div></div></div>
+      ${hudBar(run, { title: '长休 · 重新准备法术' })}
       <div class="panel"><p>你坐在火堆边翻着法术。今天要带哪些出门，是现在决定的事。</p>
         <div class="small dim">${pool.some((s) => !(p.knownSpells || []).includes(s.id)) || !pool.length ? '' : '法师只能从法术书里挑（书里的法术才是你会的）。'}</div></div>
       <div class="panel">
-        <h3>环阶法术</h3>
-        ${pool.length ? `<div class="cards">${pool.map(card).join('')}</div>` : '<div class="small dim">你现在还不会任何环阶法术。</div>'}
+        <div class="section"><h3>环阶法术</h3><span class="hint">已选 <b class="${over ? 'red' : ''}">${App.prepSel.length}/${cap}</b></span></div>
+        ${pool.length ? `<div class="cards sm" style="margin-top:8px">${pool.map(card).join('')}</div>` : '<div class="small dim">你现在还不会任何环阶法术。</div>'}
       </div>
       <div class="panel">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="actions">
           <button class="primary" data-act="p:done" ${over ? 'disabled' : ''}>就这些（${App.prepSel.length}/${cap}）</button>
           <button data-act="p:keep">保持上一次的选择</button>
+          ${over ? '<span class="red small">选超了，取消几个才能出发</span>' : ''}
         </div>
       </div>`;
   }
@@ -730,9 +890,11 @@
   /* ================= 宝库 ================= */
   function treasureScreen() {
     const lines = App.run.treasureResult || [];
-    return `<div class="panel tight"><span class="tag blue">宝库</span> 上锁的铁箱</div>
-      <div class="panel"><ul>${lines.map((l) => `<li class="gold">${esc(l)}</li>`).join('')}</ul>
-      <div class="center" style="margin-top:12px"><button class="primary" data-act="tr:continue">继续</button></div></div>`;
+    return `${hudBar(App.run, { title: '宝库 · 上锁的铁箱' })}
+      <div class="panel">
+        <div class="section"><h3>你得到了</h3></div>
+        <ul>${lines.map((l) => `<li class="gold">${esc(l)}</li>`).join('')}</ul>
+        <div class="center" style="margin-top:12px"><button class="primary" data-act="tr:continue">继续</button></div></div>`;
   }
 
   /* ================= 升级 ================= */
@@ -742,9 +904,14 @@
     const cls = R.classDef(p.classId);
     const sub = R.subclassOf(p);
     const pend = R.pendingChoices(p)[0];
-    const header = `<div class="panel tight"><div class="spread">
-      <div><span class="tag gold">升级</span> <b>${esc(R.classLabel(p))}</b></div>
-      <div class="small dim">HP ${p.hp}/${p.maxHp}　熟练 ${fmt(p.prof)}</div></div></div>`;
+    const header = `<div class="hud">
+      <span class="tag gold">升级</span>
+      <span class="hud-title">${esc(R.classLabel(p))}</span>
+      <span class="hud-right">
+        <span class="tag ${p.hp / p.maxHp > 0.4 ? 'green' : 'red'}">HP ${p.hp}/${p.maxHp}</span>
+        <span class="tag">熟练 ${fmt(p.prof)}</span>
+        ${slotPips(p)}${resourceTags(p)}
+      </span></div>`;
     if (!pend) return header + `<div class="panel"><p>升级结算完成。</p><div class="center"><button class="primary" data-act="l:done">继续</button></div></div>`;
 
     let body = '';
@@ -770,7 +937,7 @@
         <div class="small dim">当前：${entries.map((e) => esc(R.classDef(e.id).name) + ' ' + e.level).join('　／　')}　（总等级 ${R.totalLevel(p)}）</div>
         <div class="small dim" style="margin-top:4px">兼职能拿到新职业的低阶特性与法术，但会稀释本职的高等级能力和高阶法术位。新开职业需要该职业主属性 ≥ 13。</div>
         <div class="cards" style="margin-top:10px">${rows}</div>
-        ${news ? `<h3 style="margin-top:14px">新开一个兼职职业</h3><div class="cards">${news}</div>` : ''}`;
+        ${news ? `<div class="section" style="margin-top:14px"><h3>新开一个兼职职业</h3></div><div class="cards">${news}</div>` : ''}`;
     } else if (pend.kind === 'invocation' || pend.kind === 'metamagic' || pend.kind === 'pactBoon') {
       const CFG = {
         invocation: { list: 'invocations', title: '魔能祈愿', act: 'l:invocation', owned: p.invocations || [], lead: '你的主人允许你从它的力量里取走一小块。选了就是永久的。' },
@@ -841,17 +1008,19 @@
     const s = App.overSummary || {};
     const run = App.run;
     return `
-      <div class="center" style="margin:22px 0"><h1>${s.victory ? '通 关' : '你 死 了'}</h1>
-        <div class="dim">${s.victory ? '三幕都走完了。你活着走出了黑曜圣所。' : `你在${esc(s.actName || '地牢')}倒下，死因是${esc(s.deathCause || '未知')}。没有下次了——这一局的你就到这里。`}</div></div>
-      <div class="panel"><h3>这一局</h3><div class="kv">
+      <div class="center" style="margin:22px 0"><h1>${s.abandoned ? '收 手' : '你 死 了'}</h1>
+        <div class="dim">${s.abandoned
+          ? `你在${esc(s.farthestLabel || '地牢')}转身往回走。没有通关这回事——能走多远就记多远。`
+          : `你在${esc(s.actName || '地牢')}倒下，死因是${esc(s.deathCause || '未知')}。没有下次了——这一局的你就到这里。`}</div></div>
+      <div class="panel"><div class="section"><h3>这一局</h3><span class="hint">成绩只看走得多远</span></div><div class="kv" style="margin-top:6px">
         <b>角色</b><span>${esc(s.race || '')} ${esc(s.className || '')}${s.subclass ? '·' + esc(s.subclass) : ''} Lv.${s.level}（${esc(s.bg || '')}）</span>
-        <b>抵达</b><span>第 ${s.act} 幕 · ${esc(s.actName || '')}</span>
+        <b>最远</b><span class="gold">${esc(s.farthestLabel || ('第 ' + s.act + ' 幕'))}</span>
         <b>击杀</b><span>${s.kills} 个（精英 ${s.elites} · 关底 ${s.bosses}）</span>
         <b>终局数值</b><span>HP ${s.maxHp}　AC ${s.ac}　命中 ${fmt(s.hit)}</span>
         <b>金币</b><span>${s.gold}</span>
         <b>用时</b><span>约 ${s.minutes} 分钟</span>
       </div></div>
-      <div class="panel"><h3>接下来</h3>
+      <div class="panel"><div class="section"><h3>接下来</h3></div>
         <div class="small dim">《渊下》没有跨局成长：不会有新的天赋、图鉴或传承。下一局你从 1 级重新开始，唯一变化的是你自己知道该怎么玩了。</div>
         <div class="center" style="margin-top:12px">
           ${lastBuild() ? '<button class="primary" data-act="t:last" style="padding:10px 24px">用同一套角色再来一局</button>' : ''}
@@ -870,9 +1039,9 @@
     const attrs = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
     const attrGrid = attrs.map((k) => {
       const isMain = mains.has(k);
-      return `<div class="card" style="padding:8px 4px;text-align:center;${isMain ? 'border-color:var(--gold)' : ''}">
+      return `<div class="card ${isMain ? 'sel' : ''}">
         <div class="small dim">${attrName(k)}${isMain ? ' ★' : ''}</div>
-        <div style="font-size:21px;line-height:1.2" class="mono">${p.attrs[k]}</div>
+        <div class="val">${p.attrs[k]}</div>
         <div class="tag ${isMain ? 'gold' : ''}">${fmt(R.mod(p.attrs[k]))}</div></div>`;
     }).join('');
     const saves = attrs.map((k) => `<tr><td>${attrName(k)}</td><td class="mono">${fmt(R.saveBonus(p, k))}</td><td class="hint">${p.proficiencies.saves.includes(k) ? '熟练' : ''}</td></tr>`).join('');
@@ -882,6 +1051,11 @@
       return `<tr><td>${mark}</td><td>${esc(s.name)}</td><td class="hint">${attrName(s.attr)}</td><td class="mono">${fmt(info.total)}</td></tr>`;
     }).join('');
     const features = [];
+    // 种族与背景特性（这类没有等级，统一标为「—」排在职业特性之后）
+    const rd = R.raceDef(p.raceId);
+    for (const t of (rd && rd.traits) || []) features.push({ lv: '-', name: t.name, desc: t.desc, tag: rd.name });
+    const bg = R.bgDef(p.bgId);
+    if (bg && bg.perk) features.push({ lv: '-', name: `${bg.name}背景`, desc: bg.perk, tag: '背景' });
     for (const e of R.classEntries(p)) {
       const c = R.classDef(e.id); if (!c) continue;
       for (const f of c.features) if (f.level <= e.level) features.push({ lv: f.level, name: f.name, desc: f.desc, tag: c.name });
@@ -892,7 +1066,7 @@
     for (const sid of p.styles || []) { const st = R.styleDef(sid); if (st) features.push({ lv: '-', name: st.name, desc: st.desc, tag: '战斗风格' }); }
     features.sort((a, b) => (a.lv === '-' ? 99 : a.lv) - (b.lv === '-' ? 99 : b.lv));
     const spells = R.castableSpells(p).map((s) => `<tr><td><b>${esc(s.name)}</b></td><td class="hint">${s.level === 0 ? '戏法' : NK.Data.get('rules').slotLevelNames[s.level - 1]}</td><td class="small">${esc(s.desc)}</td></tr>`).join('');
-    const slotLine = p.slotsMax.some((x) => x > 0) ? p.slots.map((n, i) => `<span class="tag ${n > 0 ? 'blue' : ''}">${NK.Data.get('rules').slotLevelNames[i]} ${n}/${p.slotsMax[i]}</span>`).join('') : '';
+    const slotLine = slotPips(p);
     const equipRows = NK.Items.SLOTS.filter((s) => s.id !== 'rings').map((sl) => [sl, p.items[sl]])
       .concat((p.items.rings || []).map((it, i) => ['rings', it, i]));
     const equip = equipRows.map(([sl, it, idx]) => `<tr><td class="hint" style="width:52px">${esc(NK.Items.slotName(sl))}</td>
@@ -908,13 +1082,13 @@
 
     let body = '';
     if (tab === 'core') {
-      body = `<div class="cards" style="grid-template-columns:repeat(6,1fr)">${attrGrid}</div>
+      body = `<div class="attrgrid">${attrGrid}</div>
         <div class="row" style="margin-top:12px">
-          <div class="col"><h3>豁免</h3><table>${saves}</table></div>
-          <div class="col"><h3>技能</h3><table>${skillRows}</table></div>
+          <div class="col"><div class="section"><h3>豁免</h3></div><table>${saves}</table></div>
+          <div class="col"><div class="section"><h3>技能</h3></div><table>${skillRows}</table></div>
         </div>`;
     } else if (tab === 'combat') {
-      body = `<div class="row"><div class="col"><h3>攻击</h3><table>
+      body = `<div class="row"><div class="col"><div class="section"><h3>攻击</h3></div><table>
           <tr><td>右手</td><td class="mono">${itemLine(p.items.mainHand)}</td></tr>
           <tr><td>左手</td><td class="mono">${itemLine(p.items.offHand)}${p.items.offHand && p.items.offHand.dice ? '　<span class="hint">可用附赠动作攻击</span>' : ''}</td></tr>
           <tr><td>伤害</td><td class="mono">${R.weaponDice(p)} ${fmt(R.damageBonus(p))} ${p.items.mainHand ? esc(p.items.mainHand.dmgType) : ''}</td></tr>
@@ -924,13 +1098,13 @@
           ${R.spellAbility(p) ? `<tr><td>施法</td><td class="mono">${attrName(R.spellAbility(p))}　DC ${R.spellDc(p)}　攻击 ${fmt(R.spellAttack(p))}</td></tr>` : ''}
           <tr><td>减伤</td><td class="mono">${fmt(-(p.mods.dr || 0))}</td></tr>
         </table>
-        <h3 style="margin-top:10px">防御</h3><table>
+        <div class="section" style="margin-top:12px"><h3>防御</h3></div><table>
           <tr><td>AC</td><td class="mono">${p.ac}</td></tr>
           <tr><td>先攻</td><td class="mono">${fmt(R.initiative(p))}</td></tr>
           <tr><td>抗性</td><td class="small">${(p.resist || []).join('、') || '无'}</td></tr>
           <tr><td>免疫</td><td class="small">${(p.immune || []).join('、') || '无'}</td></tr>
         </table>
-        ${pen.strDexDisadvantage || pen.heavyStrPenalty || inter > 0 ? `<h3 style="margin-top:10px">惩罚</h3><table>
+        ${pen.strDexDisadvantage || pen.heavyStrPenalty || inter > 0 ? `<div class="section" style="margin-top:12px"><h3>惩罚</h3></div><table>
           ${pen.strDexDisadvantage ? '<tr><td class="red">未熟练护甲</td><td class="small">力量与敏捷的豁免/检定劣势，无法施法</td></tr>' : ''}
           ${pen.heavyStrPenalty ? '<tr><td class="red">力量不足</td><td class="small">AC 额外 -2</td></tr>' : ''}
           ${inter > 0 ? `<tr><td class="red">能量干涉</td><td class="small">${R.ringCount(p)} 枚戒指，所有 d20 检定 -${inter}</td></tr>` : ''}
@@ -938,21 +1112,28 @@
         </div></div>`;
     } else if (tab === 'features') {
       body = `<table>${features.map((f) => `<tr><td class="hint" style="width:56px">${f.lv === '-' ? f.tag : 'Lv.' + f.lv}</td><td style="width:110px"><b>${esc(f.name)}</b></td><td class="small">${esc(f.desc)}</td></tr>`).join('')}</table>
-        ${(p.buffs || []).length ? `<h3 style="margin-top:12px">当前状态</h3><table>${p.buffs.map((b) => `<tr><td class="${b.kind === 'curse' ? 'red' : 'green'}">${esc(b.name)}</td><td class="small">${esc(b.desc || '')}</td></tr>`).join('')}</table>` : ''}`;
+        ${(p.buffs || []).length ? `<div class="section" style="margin-top:12px"><h3>当前状态</h3></div><table>${p.buffs.map((b) => `<tr><td class="${b.kind === 'curse' ? 'red' : 'green'}">${esc(b.name)}</td><td class="small">${esc(b.desc || '')}</td></tr>`).join('')}</table>` : ''}`;
     } else if (tab === 'skills') {
       body = `<table>${skillRows}</table>`;
     } else if (tab === 'spells') {
-      body = `<div class="small dim" style="margin-bottom:6px">${slotLine || '没有法术位'}</div><table>${spells}</table>`;
+      body = `<div class="small" style="margin-bottom:8px">${slotLine || '<span class="hint">没有法术位</span>'}</div><table>${spells}</table>`;
     } else {
       body = `<table>${equip}</table>`;
     }
 
+    const sstats = [
+      ['gold', '命中', fmt(R.attackBonus(p))],
+      ['blue', 'AC', p.ac],
+      ['', '先攻', fmt(R.initiative(p))],
+      ['red', '重击', p.critRange + '-20'],
+    ].map(([c, k, v]) => `<span class="stat ${c}"><em>${k}</em><b>${v}</b></span>`).join('');
     return `
       <div class="spread"><div><h2 style="margin:0">${esc(p.name)}</h2>
         <div class="small dim">${esc(R.raceDef(p.raceId).name)} · ${esc(R.classLabel(p))}　背景：${esc(R.bgDef(p.bgId).name)}　熟练 ${fmt(p.prof)}</div></div>
-        <div class="small"><span class="tag gold">⚔ ${fmt(R.attackBonus(p))}</span><span class="tag blue">AC ${p.ac}</span><span class="tag">先攻 ${fmt(R.initiative(p))}</span><span class="tag red">重击 ${p.critRange}-20</span></div></div>
-      <div class="bar" style="margin-top:8px"><i style="width:${Math.round(p.hp / p.maxHp * 100)}%"></i></div>
+        <div class="stats">${sstats}</div></div>
+      ${hpBar(p.hp, p.maxHp)}
       <div class="small dim">HP ${p.hp}/${p.maxHp}　生命骰 ${p.hitDice.left}/${p.hitDice.total}d${p.hitDice.die}　经验 ${p.xp}${R.xpNeeded(p.level) !== null ? '/' + R.xpNeeded(p.level) : ''}</div>
+      <div class="small" style="margin-top:5px">${slotPips(p)}${resourceTags(p)}</div>
       ${tabsHtml}
       ${body}`;
   }
@@ -1018,16 +1199,20 @@
     );
 
     return `<h2>背包与装备</h2>
-      <div class="small dim">金币 ${run.gold}　食物 ${run.food} 份（长休消耗 1 份）　消耗品 ${(p.inventory || []).length}/10</div>
-      ${pen.strDexDisadvantage ? `<div class="panel tight" style="border-color:var(--red);margin-top:8px"><b class="red">护甲惩罚</b><div class="small">你穿着不熟练的护甲或盾牌：力量与敏捷的豁免/检定具有劣势，并且无法施法。</div></div>` : ""}
+      <div class="stats" style="margin-bottom:8px">
+        <span class="stat gold"><em>金币</em><b>${run.gold}</b></span>
+        <span class="stat"><em>食物</em><b>${run.food}</b></span>
+        <span class="stat"><em>消耗品</em><b>${(p.inventory || []).length}/10</b></span>
+      </div>
+      ${pen.strDexDisadvantage ? `<div class="panel tight" style="border-color:var(--red)"><b class="red">护甲惩罚</b><div class="small">你穿着不熟练的护甲或盾牌：力量与敏捷的豁免/检定具有劣势，并且无法施法。</div></div>` : ""}
       ${pen.heavyStrPenalty ? `<div class="small red" style="margin-top:6px">力量不足，AC 额外 -2。</div>` : ""}
-      <h3>已装备</h3>
-      <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">${equipped}</div>
-      ${skills.length ? `<h3 style="margin-top:12px">装备技能</h3>
+      <div class="section"><h3>已装备</h3></div>
+      <div class="cards sm">${equipped}</div>
+      ${skills.length ? `<div class="section" style="margin-top:12px"><h3>装备技能</h3></div>
         <table>${skills.map((s) => `<tr><td style="width:110px"><b class="gold">${esc(s.name)}</b></td><td class="small">${esc(s.desc || '')}</td><td class="hint" style="width:90px">${esc(s.source)}</td></tr>`).join('')}</table>` : ''}
-      <h3 style="margin-top:12px">背包（${(p.bag || []).length} 件）</h3>
+      <div class="section" style="margin-top:12px"><h3>背包（${(p.bag || []).length} 件）</h3></div>
       ${bagRows || '<div class="dim small">空。</div>'}
-      <h3 style="margin-top:12px">消耗品</h3>
+      <div class="section" style="margin-top:12px"><h3>消耗品</h3></div>
       <table>${cons || '<tr><td class="dim">空</td></tr>'}</table>
       <div class="small dim" style="margin-top:8px">抗性：${(p.resist || []).length ? esc(p.resist.join('、')) : '无'}　免疫：${(p.immune || []).length ? esc(p.immune.join('、')) : '无'}</div>`;
   }
@@ -1041,24 +1226,24 @@
   function recordsHtml() {
     const list = NK.Codex.records();
     const s = NK.Codex.recordStats();
-    if (!list.length) return '<h2>通关记录</h2><div class="dim">还没有打完过一局。记录只是记录，不会给你任何加成。</div>';
-    const byClass = Object.keys(s.byClass).map((k) => `${esc(k)} ${s.byClass[k].wins}/${s.byClass[k].runs}`).join('　');
-    return `<h2>通关记录</h2>
+    if (!list.length) return '<h2>行走记录</h2><div class="dim">还没有走过一局。这里只记你走到的最远距离，不记输赢。</div>';
+    const byClass = Object.keys(s.byClass).map((k) => `${esc(k)} 最远 ${esc(s.byClass[k].bestLabel)}（${s.byClass[k].runs} 局）`).join('　');
+    return `<h2>行走记录</h2>
       <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-bottom:10px">
         <div class="card" style="cursor:default"><div class="hint">总局数</div><b style="font-size:20px">${s.total}</b></div>
-        <div class="card" style="cursor:default"><div class="hint">通关</div><b style="font-size:20px" class="gold">${s.wins}</b><span class="small dim">（${s.rate}%）</span></div>
+        <div class="card" style="cursor:default"><div class="hint">最远距离</div><b style="font-size:20px" class="gold">${esc(s.bestDepthLabel)}</b><span class="small dim">（平均 ${s.avgDepth}）</span></div>
         <div class="card" style="cursor:default"><div class="hint">最高等级</div><b style="font-size:20px">${s.bestLevel}</b></div>
         <div class="card" style="cursor:default"><div class="hint">最多击杀</div><b style="font-size:20px">${s.bestKills}</b></div>
       </div>
       <div class="small dim" style="margin-bottom:8px">按职业：${byClass || '—'}</div>
       <table>
-        <tr><th>结果</th><th>角色</th><th>等级</th><th>难度</th><th>进度</th><th>击杀</th><th>用时</th></tr>
+        <tr><th>最远</th><th>角色</th><th>等级</th><th>难度</th><th>结局</th><th>击杀</th><th>用时</th></tr>
         ${list.map((r) => `<tr>
-          <td>${r.result === 'victory' ? '<span class="tag gold">通关</span>' : `<span class="tag red">阵亡</span>`}</td>
+          <td><b class="gold">${esc(r.farthestLabel || ('第 ' + r.act + ' 幕'))}</b></td>
           <td>${esc(r.race || '')} ${esc(r.className || '')}${r.subclass ? '·' + esc(r.subclass) : ''}<div class="hint">${esc(r.name || '')}</div></td>
           <td>${r.level}</td>
           <td class="small">${esc(r.difficultyName || '')}</td>
-          <td class="small">第 ${r.act} 幕${r.result === 'defeat' && r.deathCause ? `<div class="hint">死于 ${esc(r.deathCause)}</div>` : ''}</td>
+          <td class="small">${r.result === 'victory' ? '<span class="tag gold">通关</span>' : r.deathCause === '主动离开' ? '<span class="tag blue">收手</span>' : `<span class="tag red">阵亡</span>`}${r.deathCause && r.deathCause !== '主动离开' ? `<div class="hint">死于 ${esc(r.deathCause)}</div>` : ''}</td>
           <td>${r.kills}</td>
           <td class="small">${r.minutes} 分</td>
         </tr>`).join('')}
@@ -1096,7 +1281,7 @@
       <div class="small dim">只记录你见过的东西，不提供任何数值加成——集齐只是属于你自己的成就。</div>
       <div class="panel tight" style="margin:10px 0">
         <div class="spread"><b>总收集度</b><span class="tag ${pct >= 100 ? 'green' : 'gold'}">${allSeen}/${allTotal}（${pct}%）</span></div>
-        <div style="height:8px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:6px"><div style="height:100%;width:${pct}%;background:#caa45a"></div></div>
+        <div class="bar thin"><i class="goldp" style="width:${pct}%"></i></div>
       </div>
       <div class="actions" style="margin:10px 0">
         ${CODEX_TABS.map((t) => `<button class="sm ${t.id === tab ? 'primary' : ''}" data-act="codex:tab" data-tab="${t.id}">${t.name} ${prog[t.id].seen}/${prog[t.id].total}${done(t.id) ? ' ✅' : ''}</button>`).join('')}
@@ -1107,26 +1292,34 @@
   }
 
   function helpHtml() {
+    const ASI = '属性提升在 4 / 8 / 12 / 16 / 19 级（战士额外 6、14 级，游荡者额外 10 级），可选专长代替';
     return `<h2>规则（5e 精简版）</h2>
-      <h3>检定</h3><ul class="small">
+      <div class="section"><h3>检定</h3></div><ul class="small">
         <li>攻击 = d20 + 属性调整值 + 熟练加值 + 装备，对上 AC。自然 20 必中且重击，自然 1 必失。</li>
         <li>豁免 = d20 + 属性调整值（本职豁免加熟练）。法术 DC = 8 + 熟练 + 施法属性。</li>
         <li>优势/劣势：投两次 d20 取高/取低。潜行、包夹、状态都会带来优势或劣势。</li>
-        <li>技能检定用于事件与部分战斗行动（隐匿、运动、察觉……），加值 = 属性 + 熟练(+专精 3)。</li>
+        <li>技能检定用于事件与部分战斗行动（隐匿、运动、察觉……），加值 = 属性 + 熟练（+专精 3）。</li>
       </ul>
-      <h3>回合与资源</h3><ul class="small">
+      <div class="section" style="margin-top:12px"><h3>回合与资源</h3></div><ul class="small">
         <li>每回合有 1 个<b>动作</b>和 1 个<b>附赠动作</b>。攻击、施法、使用物品、闪避占动作；回气、灵巧动作、圣疗、至圣斩占附赠动作。</li>
-        <li><b>法术位</b>按环阶消耗，短休不回，长休（或奥术恢复）才回。戏法不消耗法术位。</li>
-        <li><b>短休</b>：消耗生命骰回血（用几颗由你决定），法师还能恢复法术位。<b>长休</b>：全回复 + 生命骰回一半。</li>
+        <li><b>法术位</b>按环阶消耗，短休不回，长休才回。戏法不消耗法术位，伤害在 5 / 11 / 17 级翻倍、三倍、四倍。</li>
+        <li><b>邪术环</b>是独立的一套槽位，短休或长休都回满，只能放邪术师的法术。</li>
+        <li><b>专注</b>：维持专注时受到伤害，要过 DC = max(10, 半伤) 的体质豁免，失败就中断。</li>
+        <li><b>短休</b>：消耗生命骰回血（用几颗由你决定），并恢复野性形态、诗人激励骰等短休资源。</li>
+        <li><b>长休</b>：全回复 + 生命骰回一半 + 法师奥术恢复 + 可以重新选择今天要准备的法术（消耗 1 份食物）。</li>
         <li><b>休息次数不限</b>——限制你的是地图上营地节点的数量，以及生命骰的总量（只有长休能回复生命骰）。</li>
         <li>生命降到 0 会进入<b>濒死</b>：每回合投死亡豁免，成功 3 次稳定（1 HP），失败 3 次死亡。敌人会补刀。</li>
+        <li><b>巨量伤害即死</b>：单次伤害超出你最大生命值的溢出部分 ≥ 最大生命，直接死亡，不进濒死。</li>
       </ul>
-      <h3>成长</h3><ul class="small">
-        <li>升级获得职业特性；3 级（牧师 1 级、法师 2 级）选子职；4/8 级选属性提升或专长；2/5/9 级学新法术。</li>
+      <div class="section" style="margin-top:12px"><h3>成长</h3></div><ul class="small">
+        <li>等级上限 <b>20 级</b>。升级获得职业特性；3 级（牧师 / 邪术师 / 术士 1 级、法师 / 德鲁伊 2 级）选子职。</li>
+        <li>${ASI}。</li>
         <li>本作没有跨局成长。每一局都是新的 1 级角色。</li>
       </ul>
-      <h3>操作</h3><ul class="small">
-        <li><span class="mono">1</span> 攻击　<span class="mono">2-9</span> 法术/技能　<span class="mono">Q</span> 闪避　<span class="mono">E</span> 背包　<span class="mono">C</span> 人物卡　<span class="mono">空格</span> 结束回合　<span class="mono">Esc</span> 关闭</li>
+      <div class="section" style="margin-top:12px"><h3>操作</h3></div>
+      <ul class="small">
+        <li><span class="kbd">1</span> 攻击　<span class="kbd">2</span>-<span class="kbd">9</span> 法术　<span class="kbd">Q</span> 闪避　<span class="kbd">␣</span> 结束回合　<span class="kbd">E</span> 背包　<span class="kbd">C</span> 人物卡　<span class="kbd">Esc</span> 关闭</li>
+        <li class="hint">战斗里也可以直接点按钮，按钮上标的数字就是对应的快捷键。</li>
       </ul>`;
   }
 
@@ -1144,10 +1337,24 @@
       <div class="center" style="margin-top:14px"><button data-act="close">关闭</button></div></div></div>`;
   }
 
+  /* 滚动位置：整体替换 innerHTML 会让文档高度瞬间归零，浏览器把 scrollTop 夹回 0。
+     同一屏重渲染时把位置还回去，换屏时才回到顶部。 */
+  const scrollY = () => {
+    const g = typeof globalThis !== 'undefined' ? globalThis : {};
+    return (g.scrollY !== undefined ? g.scrollY : (g.pageYOffset || 0));
+  };
+  const scrollTo = (y) => {
+    try {
+      const g = typeof globalThis !== 'undefined' ? globalThis : {};
+      if (typeof g.scrollTo === 'function') g.scrollTo(0, y);
+    } catch (e) { /* 测试环境没有 window，忽略 */ }
+  };
+
   function render() {
     if (globalThis.__NO_RENDER__) return;   // TEST HOOK（验证脚本用，可删）
     const root = el();
     if (!root) return;
+    const keepY = (App._renderScreen === App.screen) ? scrollY() : 0;
     let html = '';
     const s = App.screen;
     if (s === 'title') html = titleScreen();
@@ -1166,6 +1373,8 @@
     root.innerHTML = html;
     const log = root.querySelector('.log');
     if (log) log.scrollTop = log.scrollHeight;
+    App._renderScreen = App.screen;
+    scrollTo(keepY);   // 换屏时 keepY 为 0，自然回到顶部
   }
 
   function titleScreen() {
@@ -1183,33 +1392,34 @@
         <div class="small dim" style="margin-top:6px">没有跨局成长。死了就重来。</div></div>
 
       <div class="panel">
-        <div class="spread"><h3 style="margin:0">开始</h3>
-          <div>
-            ${last ? `<button class="primary" data-act="t:last">用上次的角色再来一局</button>` : ''}
-            <button data-act="t:new">重新捏一个角色</button>
-            ${saved ? '<button data-act="t:continue">继续未完成的一局</button>' : ''}
-          </div>
+        <div class="section"><h3>开始</h3></div>
+        <div class="actions">
+          ${last ? `<button class="primary" data-act="t:last">用上次的角色再来一局</button>` : ''}
+          <button data-act="t:new">重新捏一个角色</button>
+          ${saved ? '<button data-act="t:continue">继续未完成的一局</button>' : ''}
         </div>
         ${last ? `<div class="small dim" style="margin-top:8px">上次：${esc(buildSummary(last))}${last.name ? '　（' + esc(last.name) + '）' : ''}</div>` : '<div class="small dim" style="margin-top:8px">还没有用过任何角色。捏完一个人可以在最后一页保存下来。</div>'}
       </div>
 
       <div class="panel">
-        <h3>保存的角色配置（${builds.length}）</h3>
+        <div class="section"><h3>保存的角色配置（${builds.length}）</h3></div>
         ${builds.length ? builds.map((b) => `
           <div class="buildrow">
             <div><b>${esc(b.name)}</b><div class="small dim">${esc(buildSummary(b))}</div></div>
             <div><button class="sm primary" data-act="t:quickstart" data-id="${b.id}">用这套开局</button>
                  <button class="sm" data-act="t:editbuild" data-id="${b.id}">编辑</button>
                  <button class="sm ghost" data-act="t:renamebuild" data-id="${b.id}">改名</button>
-                 <button class="sm ghost" data-act="t:delbuild" data-id="${b.id}">删除</button></div>
+                 <button class="sm danger" data-act="t:delbuild" data-id="${b.id}">删除</button></div>
           </div>`).join('') : '<div class="small dim">还没有保存过配置。捏完角色后在最后一步点「保存这套配置」。</div>'}
       </div>
 
-      <div class="panel"><h3>难度</h3><table>${diffs.map((d) => `<tr><td><b>${esc(d.name)}</b></td><td class="small">${esc(d.desc)}</td><td class="hint">经验 ×${d.xpMul}</td></tr>`).join('')}</table>
-      <div class="small dim" style="margin-top:6px">难度在创建角色时选择，没有解锁条件。</div></div>
+      <div class="panel">
+        <div class="section"><h3>难度</h3><span class="hint">创建角色时选择，没有解锁条件</span></div>
+        <table>${diffs.map((d) => `<tr><td><b>${esc(d.name)}</b></td><td class="small">${esc(d.desc)}</td><td class="hint">经验 ×${d.xpMul}</td></tr>`).join('')}</table>
+      </div>
 
       <div class="center"><button class="sm ghost" data-act="open:help">规则说明</button>
-        <button class="sm ghost" data-act="open:records" style="margin-left:6px">通关记录 ${rec.total ? `（${rec.wins}/${rec.total}）` : ''}</button>
+        <button class="sm ghost" data-act="open:records" style="margin-left:6px">行走记录${rec.total ? `（最远 ${esc(rec.bestDepthLabel)}）` : ''}</button>
         <button class="sm ghost" data-act="open:codex" style="margin-left:6px">图鉴 ${codexDone}/${codexTotal}</button></div>`;
   }
 
@@ -1433,7 +1643,12 @@
     },
 
     /* 战斗 */
-    'b:attack': () => { App.lastActionKey = 'attack'; NK.Combat.playerAction(App.run._combat, { type: 'attack', target: App.targetUid }); render(); },
+    'b:attack': () => {
+      const c = App.run._combat;
+      NK.Combat.playerAction(c, { type: 'attack', target: App.targetUid });
+      App.lastActionKey = c.actionFailed ? null : 'attack';   // 没打出去就别记住，免得一直锁在够不到的攻击上
+      render();
+    },
     'b:do': () => {
       const run = App.run;
       const c = run._combat;
@@ -1446,10 +1661,13 @@
       const usable = opts.filter((o) => (o.need === 'bonus' ? c.turn.bonus : c.turn.action));
       const o = usable[App.selAction || 0];
       if (!o) { toast('本回合没有可执行的动作。'); return; }
+      if (o.blocked) { toast(o.blocked); render(); return; }
       if (o.kind === 'spell') NK.Combat.playerAction(c, { type: 'cast', spellId: o.id, slot: o.slot, target: App.targetUid });
       else if (o.kind === 'bonus') NK.Combat.playerAction(c, { type: 'bonus', id: o.id, target: App.targetUid });
       else NK.Combat.playerAction(c, { type: 'item', index: o.index, target: App.targetUid });
-      App.lastActionKey = actionKey(o);   // 记住这一手，下一回合自动选中同一个
+      // 只有真的用出去了才记进「上一手」；失败的话保持现状，玩家可以立刻改选别的
+      if (!c.actionFailed) App.lastActionKey = actionKey(o);
+      else App.lastActionKey = null;
       App.selAction = 0;
       render();
     },
@@ -1459,7 +1677,13 @@
     'b:end': () => { NK.Combat.playerAction(App.run._combat, { type: 'endTurn' }); render(); },
     'b:pass': () => { NK.Combat.playerAction(App.run._combat, { type: 'endTurn' }); render(); },
     'b:bonus': (d) => { NK.Combat.playerAction(App.run._combat, { type: 'bonus', id: d.id, target: App.targetUid }); render(); },
-    'b:cast': (d) => { App.lastActionKey = `spell:${d.id}:${parseInt(d.slot, 10)}`; NK.Combat.playerAction(App.run._combat, { type: 'cast', spellId: d.id, slot: parseInt(d.slot, 10), target: App.targetUid }); render(); },
+    'b:cast': (d) => {
+      const c = App.run._combat;
+      const slot = parseInt(d.slot, 10);
+      NK.Combat.playerAction(c, { type: 'cast', spellId: d.id, slot, target: App.targetUid });
+      App.lastActionKey = c.actionFailed ? null : `spell:${d.id}:${slot}`;
+      render();
+    },
     'b:item': (d) => { NK.Combat.playerAction(App.run._combat, { type: 'item', index: parseInt(d.index, 10), target: App.targetUid }); render(); },
     'target': (d) => { App.targetUid = d.uid; render(); },
     'b:continue': () => {
@@ -1644,6 +1868,16 @@
     copy: (d) => { const r = NK.Run.copyScroll(App.run, parseInt(d.index, 10)); toast(r.msg); render(); },
     'save:quit': () => { NK.RunStore.save(App.run); App.run = null; App.screen = 'title'; toast('已保存。'); render(); },
     'o:again': () => { App.run = null; App.overSummary = null; startCreate(lastBuild()); render(); },
+    // 主动收手：没有通关，走到哪算哪
+    'map:abandon': () => {
+      if (!App.confirmAbandon) { App.confirmAbandon = true; render(); return; }
+      const run = App.run;
+      App.confirmAbandon = false;
+      App.overSummary = NK.Run.abandon(run);   // 内部结算并写入行走记录
+      App.screen = 'over';
+      render();
+    },
+    'map:cancel': () => { App.confirmAbandon = false; render(); },
   };
 
   function onClick(e) {
