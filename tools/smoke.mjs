@@ -111,7 +111,8 @@ while (App.run && !App.run.ended && guard++ < 1500) {
     const p = App.run.player;
     const pend = R.pendingChoices(p)[0];
     if (!pend) { step('升级完成', () => UI.act('l:done')); continue; }
-    if (pend.kind === 'subclass') step('选子职', () => UI.act('l:subclass', { id: R.classDef(p.classId).subclasses[0].id }));
+    if (pend.kind === 'classlevel') step('职业进阶', () => UI.act('l:classlevel', { id: p.lastLeveledClassId }));
+    else if (pend.kind === 'subclass') step('选子职', () => UI.act('l:subclass', { id: R.classDef(p.classId).subclasses[0].id }));
     else if (pend.kind === 'style') step('选风格', () => UI.act('l:style', { id: NK.Data.get('rules').fightingStyles[0].id }));
     else if (pend.kind === 'expertise') step('选专精', () => UI.act('l:expertise', { id: p.proficiencies.skills[0] }));
     else if (pend.kind === 'asi') {
@@ -122,7 +123,7 @@ while (App.run && !App.run.ended && guard++ < 1500) {
       });
     } else {
       const cls = R.classDef(p.classId);
-      const known = pend.kind === 'cantrips' ? p.cantrips : (cls.spellcasting.prepared ? p.prepared : p.knownSpells);
+      const known = pend.kind === 'cantrips' ? p.cantrips : (cls.spellcasting.spellbook ? p.knownSpells : (cls.spellcasting.prepared ? p.prepared : p.knownSpells));
       const maxLv = R.maxSpellLevel(p) || 1;
       const pool = NK.Data.get('spells').spells.filter((x) => x.classes.includes(p.classId) && (pend.kind === 'cantrips' ? x.level === 0 : (x.level >= 1 && x.level <= maxLv)) && !known.includes(x.id));
       step('学法术', () => UI.act('l:spell', { id: pool[0].id }));
@@ -175,7 +176,7 @@ step('法术位表', () => {
   const p = R.createPlayer({ raceId: 'human', classId: 'wizard', bgId: 'sage', attrs: { str: 8, dex: 14, con: 14, int: 15, wis: 10, cha: 8 }, skills: [], cantrips: ['fire_bolt', 'ray_of_frost', 'shocking_grasp'], knownSpells: ['magic_missile'] });
   if (p.slotsMax[0] !== 2) throw new Error('1 级法师应有 2 个一环法术位，实际 ' + p.slotsMax[0]);
   R.gainXp(p, 5000);
-  if (p.level !== 10) throw new Error('经验结算后应为 10 级，实际 ' + p.level);
+  if (p.level < 10) throw new Error('经验结算后应至少 10 级，实际 ' + p.level);
   if (p.slotsMax[2] !== 3) throw new Error('10 级法师三环法术位应为 3，实际 ' + p.slotsMax[2]);
 });
 step('职业选择队列完整', () => {
@@ -183,9 +184,10 @@ step('职业选择队列完整', () => {
     const p = R.createPlayer({ raceId: 'human', classId: cid, bgId: 'soldier', attrs: { str: 14, dex: 14, con: 14, int: 12, wis: 12, cha: 12 }, skills: [R.classDef(cid).skillChoices.from[0]], cantrips: [], knownSpells: [], prepared: [] });
     R.gainXp(p, 5000);
     let g = 0;
-    while (R.pendingChoices(p).length && g++ < 30) {
+    while (R.pendingChoices(p).length && g++ < 400) {
       const pend = R.pendingChoices(p)[0];
-      if (pend.kind === 'subclass') R.chooseSubclass(p, R.classDef(cid).subclasses[0].id);
+      if (pend.kind === 'classlevel') R.chooseClassLevel(p, { classId: p.lastLeveledClassId });
+      else if (pend.kind === 'subclass') R.chooseSubclass(p, R.classDef(cid).subclasses[0].id);
       else if (pend.kind === 'style') R.chooseStyle(p, NK.Data.get('rules').fightingStyles[0].id);
       else if (pend.kind === 'expertise') {
         const cand = p.proficiencies.skills.find((s) => !(p.expertise || []).includes(s));
@@ -193,9 +195,12 @@ step('职业选择队列完整', () => {
         R.chooseExpertise(p, cand);
       }
       else if (pend.kind === 'asi') { const a = {}; a[R.classDef(cid).primary] = 2; R.chooseAsi(p, a); }
+      else if (pend.kind === 'invocation') R.chooseInvocation(p, NK.Data.get('rules').invocations[(p.invocations || []).length].id);
+      else if (pend.kind === 'metamagic') R.chooseMetamagic(p, NK.Data.get('rules').metamagics[(p.metamagics || []).length].id);
+      else if (pend.kind === 'pactBoon') R.choosePactBoon(p, NK.Data.get('rules').pactBoons[0].id);
       else {
         const cls = R.classDef(cid);
-        const known = pend.kind === 'cantrips' ? p.cantrips : (cls.spellcasting.prepared ? p.prepared : p.knownSpells);
+        const known = pend.kind === 'cantrips' ? p.cantrips : (cls.spellcasting.spellbook ? p.knownSpells : (cls.spellcasting.prepared ? p.prepared : p.knownSpells));
         const eff = R.spellListOf(cid);
         const pool = NK.Data.get('spells').spells.filter((x) => x.classes.some((c) => eff.includes(c)) && (pend.kind === 'cantrips' ? x.level === 0 : x.level <= (R.maxSpellLevel(p) || 1)) && !known.includes(x.id));
         if (!pool.length) throw new Error(cid + ' 的法术池空了（' + pend.kind + '）');
@@ -387,7 +392,7 @@ step('回息之冠：被动复活', () => {
   const rng = NK.RNG.make(11);
   const e = NK.Combat.makeEnemy('goblin_cutter', { id: 1, hpMul: 1, dmgMul: 1, hitAdd: 0 }, rng);
   const c = NK.Combat.start(p, [e], { rng, tier: { id: 1, hpMul: 1, dmgMul: 1, hitAdd: 0 }, act: 1, source: 'normal', allowSurprise: false });
-  NK.Combat.damage(c, p, p.hp + 50, '挥砍', e);
+  NK.Combat.damage(c, p, p.hp + 5, '挥砍', e);   // 5：巨量伤害即死已实装，溢出 ≥ 最大生命会直接死
   if (p.hp !== 1) throw new Error('回息之冠应该以 1 HP 站起，实际 HP ' + p.hp);
   if (c.over) throw new Error('不应该判定死亡');
 });

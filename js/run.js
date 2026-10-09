@@ -199,16 +199,47 @@
       const p = run.player;
       const die = p.hitDice.die;
       const per = Math.max(1, Math.floor(die / 2) + 1 + R.mod(p.attrs.con));
+      const shortBack = [];
+      if (p.pactLevel) shortBack.push(`邪术环回满（${p.pactSlots}/${p.pactSlotsMax} → ${p.pactSlotsMax}）`);
+      if (p.flags.ki) shortBack.push(`气回满（${p.kiLeft}/${p.kiMax} → ${p.kiMax}）`);
+      if (p.flags.superiority) shortBack.push(`卓越骰回满（${p.superiorityLeft || 0} → ${p.flags.superiority}）`);
+      if (p.flags.wildShape) shortBack.push(`野性形态次数回满（${p.wildShapeLeft || 0} → ${p.wildShapeMax || 2}）`);
+      if (p.flags.sorcerousRestoration) shortBack.push(`法术转生：术法点 +4（${p.sorceryLeft || 0} → 最多 ${p.sorceryMax}）`);
+      if (p.flags.fontOfInspiration && p.inspirationMax > 0) shortBack.push(`吟游灵感回满（${p.inspirationLeft || 0} → ${p.inspirationMax}）`);
+      const longBack = ['生命回满', '所有法术位回满'];
+      if (p.pactLevel) longBack.push('邪术环回满');
+      if (p.flags.arcaneRecovery && p.slotsMax.some((x) => x > 0)) longBack.push(`奥术恢复：补回约 ${Math.ceil(p.level / 2)} 环的法术位`);
+      const prepClasses = R.classEntries(p).filter((e) => { const sc = (R.classDef(e.id) || {}).spellcasting; return sc && sc.prepared; });
+      if (prepClasses.length) longBack.push('可以重新选择「已准备」的法术');
+      if (p.flags.rage) longBack.push(`狂暴次数回满（${p.rageLeft || 0} → ${p.rageMax}）`);
+      if (p.flags.ki) longBack.push(`气回满（${p.kiLeft}/${p.kiMax} → ${p.kiMax}）`);
+      if (p.flags.superiority) longBack.push(`卓越骰回满（${p.superiorityLeft || 0} → ${p.flags.superiority}）`);
+      if (p.flags.layOnHands) longBack.push(`圣疗池回满（→ ${p.level * p.flags.layOnHands}）`);
+      if (p.sorceryMax > 0) longBack.push(`术法点回满（${p.sorceryLeft || 0} → ${p.sorceryMax}）`);
+      if (p.wildShapeMax > 0) longBack.push(`野性形态次数回满（${p.wildShapeLeft || 0} → ${p.wildShapeMax}）`);
+      if (p.inspirationMax > 0) longBack.push(`吟游灵感回满（${p.inspirationLeft || 0} → ${p.inspirationMax}）`);
+      longBack.push(`生命骰回复 ${Math.max(1, Math.floor(p.hitDice.total / 2))} 颗`);
+      longBack.push('清除全部负面状态');
       return {
         short: {
           ok: p.hitDice.left > 0,
           dice: p.hitDice.left, perDie: per,
-          label: '短休', detail: `消耗生命骰回血：每颗生命骰回复约 ${per} 点生命；法师的奥术恢复会同时恢复法术位。不需要食物。`,
+          label: '短休',
+          detail: `喘口气，包扎伤口。花掉几颗生命骰换血，不消耗食物。`,
+          restores: shortBack.length ? shortBack : ['只回血（你没有短休恢复的资源）'],
+          cost: '不消耗食物',
+          costKind: 'free',
+          note: '法术位（除邪术环）与生命骰总量不会恢复。',
         },
         long: {
           ok: run.food >= 1,
           food: run.food,
-          label: '长休', detail: `消耗 1 份食物：生命回满、法术位全部恢复、生命骰恢复 ${Math.max(1, Math.floor(p.hitDice.total / 2))} 颗。`,
+          label: '长休',
+          detail: `睡一整夜。吃 1 份食物，换回一个完整的自己。`,
+          restores: longBack,
+          cost: `消耗 1 份食物（现有 ${run.food} 份）`,
+          costKind: run.food >= 1 ? 'gold' : 'red',
+          note: '生命骰只在长休时回复一半，所以别把长休浪费在满血的时候。',
         },
       };
     },
@@ -231,15 +262,16 @@
       const extra = (p.flags.restHealBonus || 0) > 0 ? Math.round(p.maxHp * p.flags.restHealBonus) : 0;
       if (extra) p.hp = Math.min(p.maxHp, p.hp + extra);
       let arcane = '';
-      if (p.flags.arcaneRecovery && p.slotsMax.some((x) => x > 0)) {
-        let budget = Math.ceil(p.level / 2), gained = 0;
-        for (let i = 4; i >= 0 && budget > 0; i--) {
-          while (p.slots[i] < p.slotsMax[i] && budget - (i + 1) >= 0) { p.slots[i] += 1; budget -= (i + 1); gained += 1; if (budget <= 0) break; }
-        }
-        if (gained) arcane = ` 奥术恢复：恢复了 ${gained} 个法术位。`;
-      }
       const msg = `短休：投了 ${n} 颗生命骰（${rolls.join('+')}${conMod >= 0 ? '+' + conMod : conMod}），回复 ${total + extra} 点生命。生命骰剩余 ${p.hitDice.left}/${p.hitDice.total}。${arcane}`;
       if (p.pactLevel) { p.pactSlots = p.pactSlotsMax; arcane += ` 契约魔法：邪术环已恢复。`; }
+      // 其它「短休恢复」的职业资源：武僧的气、战斗大师的卓越骰、德鲁伊的野性形态（5e）
+      if (p.flags.ki) { p.kiLeft = p.kiMax; arcane += ` 气已回满（${p.kiMax}）。`; }
+      if (p.flags.superiority) { p.superiorityLeft = p.flags.superiority; arcane += ` 卓越骰已回满（${p.superiorityLeft}）。`; }
+      if (p.wildShapeMax > 0) { p.wildShapeLeft = p.wildShapeMax; arcane += ` 野性形态次数已回满（${p.wildShapeMax}）。`; }
+      // 术士 L20「法术转生」：短休恢复 4 点术法点
+      if (p.flags.sorcerousRestoration && p.sorceryMax > 0) { p.sorceryLeft = Math.min(p.sorceryMax, (p.sorceryLeft || 0) + 4); arcane += ` 法术转生：术法点 +4（${p.sorceryLeft}/${p.sorceryMax}）。`; }
+      // 吟游诗人 L5「激励之泉」：短休即可恢复灵感
+      if (p.flags.fontOfInspiration && p.inspirationMax > 0) { p.inspirationLeft = p.inspirationMax; arcane += ` 吟游灵感已回满（${p.inspirationMax}）。`; }
       run.player.poison = null;
       Run.log(run, msg);
       Run.save(run);
@@ -253,13 +285,32 @@
       p.hp = p.maxHp;
       p.tempHp = 0;
       p.slots = p.slotsMax.slice();
+      // 奥术恢复（法师）：5e 是「每次长休一次」，补回总量 ≤ 半个法师等级（向上取整）的法术位
+      if (p.flags.arcaneRecovery && p.slotsMax.some((x) => x > 0)) {
+        let budget = Math.ceil(p.level / 2), gained = 0;
+        for (let i = R.MAX_SLOT - 1; i >= 0 && budget > 0; i--) {
+          while (p.slots[i] < p.slotsMax[i] && budget - (i + 1) >= 0) { p.slots[i] += 1; budget -= (i + 1); gained += 1; if (budget <= 0) break; }
+        }
+        if (gained) p.arcaneRecovered = gained;
+      }
       if (p.pactLevel) p.pactSlots = p.pactSlotsMax;
       p.conditions = [];
       p.hitDice.left = Math.min(p.hitDice.total, p.hitDice.left + Math.max(1, Math.floor(p.hitDice.total / 2)));
       p.dying = false;
       p.deathSaves = { success: 0, fail: 0 };
+      // 职业资源：全部回满
       if (p.flags.layOnHands) p.layPool = p.level * p.flags.layOnHands;
-      const msg = `长休：吃掉 1 份食物（剩 ${run.food} 份）。生命与法术位全部恢复，生命骰恢复至 ${p.hitDice.left}/${p.hitDice.total}。`;
+      if (p.flags.rage) p.rageLeft = p.rageMax;
+      if (p.flags.ki) p.kiLeft = p.kiMax;
+      if (p.flags.superiority) p.superiorityLeft = p.flags.superiority;
+      if (p.sorceryMax > 0) p.sorceryLeft = p.sorceryMax;                 // 术法点
+      if (p.wildShapeMax > 0) p.wildShapeLeft = p.wildShapeMax;           // 野性形态
+      if (p.inspirationMax > 0) p.inspirationLeft = p.inspirationMax;     // 吟游灵感
+      p.joltQueued = false;
+      const msg = `长休：吃掉 1 份食物（剩 ${run.food} 份）。生命与法术位全部恢复，生命骰恢复至 ${p.hitDice.left}/${p.hitDice.total}。${p.arcaneRecovered ? ` 奥术恢复补回了 ${p.arcaneRecovered} 个法术位。` : ''}`;
+      p.arcaneRecovered = 0;
+      // 长休后可以重新选择「已准备」的法术（5e：牧师/德鲁伊/圣武士/工匠/法师）
+      run.needReprepare = R.classEntries(p).some((e) => { const sc = (R.classDef(e.id) || {}).spellcasting; return sc && sc.prepared; });
       Run.log(run, msg);
       Run.save(run);
       return { ok: true, msg };
@@ -319,6 +370,10 @@
       else if (pend.kind === 'asi') res = payload.feat ? R.chooseFeat(p, payload.feat) : R.chooseAsi(p, payload.alloc || {});
       else if (pend.kind === 'style') res = R.chooseStyle(p, payload.style, pend.classId);
       else if (pend.kind === 'expertise') res = R.chooseExpertise(p, payload.skill);
+      else if (pend.kind === 'classlevel') res = R.chooseClassLevel(p, payload);
+      else if (pend.kind === 'invocation') res = R.chooseInvocation(p, payload.id);
+      else if (pend.kind === 'metamagic') res = R.chooseMetamagic(p, payload.id);
+      else if (pend.kind === 'pactBoon') res = R.choosePactBoon(p, payload.id);
       else res = R.learnSpell(p, payload.spell, pend.kind === 'cantrips', pend.classId);
       if (res.ok) {
         if (p.flags.layOnHands) p.layPool = Math.max(p.layPool || 0, p.level * p.flags.layOnHands);

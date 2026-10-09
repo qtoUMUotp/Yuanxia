@@ -37,7 +37,11 @@
       "asiLevels": [
         4,
         6,
-        8
+        8,
+        12,
+        14,
+        16,
+        19
       ],
       "spellcasting": null,
       "startGold": 120,
@@ -82,6 +86,38 @@
           "effects": {
             "indomitable": 1
           }
+        },
+        {
+          "level": 11,
+          "name": "额外攻击·二",
+          "desc": "使用攻击动作时攻击三次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 13,
+          "name": "不屈·二",
+          "desc": "不屈可以多使用一次。",
+          "effects": {
+            "indomitableUses": 1
+          }
+        },
+        {
+          "level": 17,
+          "name": "动作如潮·二",
+          "desc": "动作如潮每场战斗可以用两次。",
+          "effects": {
+            "actionSurgeUses": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "额外攻击·三",
+          "desc": "使用攻击动作时攻击四次。",
+          "effects": {
+            "extraAttack": 1
+          }
         }
       ],
       "subclasses": [
@@ -96,6 +132,15 @@
               "desc": "重击范围扩大到 19-20。",
               "effects": {
                 "critRange": 19
+              }
+            },
+            {
+              "level": 6,
+              "name": "运动健将·进阶",
+              "desc": "先攻 +1，最大生命 +8。",
+              "effects": {
+                "initBonus": 1,
+                "maxHp": 8
               }
             },
             {
@@ -115,6 +160,14 @@
                 "ac": 1,
                 "dmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "精通重击·双刃",
+              "desc": "重击范围再扩大一点（19-20 → 18-20）。",
+              "effects": {
+                "critRange": 18
+              }
             }
           ]
         },
@@ -129,6 +182,14 @@
               "desc": "获得 4 枚 d8 卓越骰，每场战斗开始时恢复；命中时可以消耗一枚增加伤害与效果。",
               "effects": {
                 "superiority": 4
+              }
+            },
+            {
+              "level": 6,
+              "name": "战技精研·进阶",
+              "desc": "卓越骰上限 +1。",
+              "effects": {
+                "superiority": 1
               }
             },
             {
@@ -148,6 +209,14 @@
                 "superiority": 2,
                 "dmg": 1
               }
+            },
+            {
+              "level": 14,
+              "name": "战术大师",
+              "desc": "卓越骰再 +1，且短休即可恢复。",
+              "effects": {
+                "superiority": 1
+              }
             }
           ]
         },
@@ -166,6 +235,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "狂暴·回气",
+              "desc": "狂暴中每次击杀回复 5 点生命。",
+              "effects": {
+                "rageHealOnKill": 5
+              }
+            },
+            {
               "level": 7,
               "name": "不屈狂怒",
               "desc": "最大生命 +12，受到伤害 -1。",
@@ -181,6 +258,14 @@
               "effects": {
                 "critRange": 19,
                 "dmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "致命狂怒",
+              "desc": "狂暴中重击额外多一颗伤害骰。",
+              "effects": {
+                "critExtraDice": 1
               }
             }
           ]
@@ -224,7 +309,10 @@
       "asiLevels": [
         4,
         8,
-        10
+        10,
+        12,
+        16,
+        19
       ],
       "spellcasting": null,
       "startGold": 140,
@@ -264,14 +352,6 @@
           }
         },
         {
-          "level": 3,
-          "name": "偷袭提升",
-          "desc": "偷袭伤害提升为 2d6。",
-          "effects": {
-            "sneakAttack": 1
-          }
-        },
-        {
           "level": 5,
           "name": "不屈闪避",
           "desc": "每回合一次，被命中时可以令该次伤害减半。偷袭提升为 3d6。",
@@ -290,11 +370,45 @@
           }
         },
         {
-          "level": 9,
-          "name": "偷袭提升",
-          "desc": "偷袭伤害提升为 5d6。",
+          "level": 11,
+          "name": "可靠天赋",
+          "desc": "任何已熟练的属性检定掷出 9 以下时，按 10 计算。",
           "effects": {
-            "sneakAttack": 1
+            "reliableTalent": 1
+          }
+        },
+        {
+          "level": 14,
+          "name": "盲感",
+          "desc": "看不见的敌人对你没有优势。",
+          "effects": {
+            "blindsense": 1
+          }
+        },
+        {
+          "level": 15,
+          "name": "滑溜心智",
+          "desc": "获得感知豁免熟练。",
+          "effects": {
+            "saveProfExtra": [
+              "wis"
+            ]
+          }
+        },
+        {
+          "level": 18,
+          "name": "难以捉摸",
+          "desc": "只要你能看见攻击者，它对你就没有优势。",
+          "effects": {
+            "elusive": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "命运一击",
+          "desc": "每场战斗一次，可以把一次未命中改成命中。",
+          "effects": {
+            "strokeOfLuck": 1
           }
         }
       ],
@@ -313,6 +427,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "致命毒素",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            },
+            {
               "level": 7,
               "name": "致命毒素",
               "desc": "每次命中额外造成 1d6 毒素伤害。",
@@ -327,6 +449,12 @@
               "effects": {
                 "executeCrit": 0.3
               }
+            },
+            {
+              "level": 14,
+              "name": "死亡一击",
+              "desc": "偷袭对未行动过的敌人额外 +2d6。",
+              "effects": {}
             }
           ]
         },
@@ -345,6 +473,15 @@
               }
             },
             {
+              "level": 6,
+              "name": "轻身",
+              "desc": "AC +1，先攻 +1。",
+              "effects": {
+                "ac": 1,
+                "initBonus": 1
+              }
+            },
+            {
               "level": 7,
               "name": "轻身",
               "desc": "AC +1，隐匿检定 +3。",
@@ -360,6 +497,14 @@
               "effects": {
                 "hit": 1,
                 "dmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "万能工具",
+              "desc": "所有技能检定 +2。",
+              "effects": {
+                "skillBonus": 2
               }
             }
           ]
@@ -401,7 +546,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": {
         "type": "half",
@@ -410,15 +558,47 @@
         "known": true,
         "knownByLevel": [
           0,
+          2,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5,
+          6,
+          6,
+          7,
+          7,
+          8,
+          8,
+          9,
+          9,
+          10,
+          10,
+          11,
+          11
+        ],
+        "cantripsByLevel": [
           0,
-          2,
-          2,
-          2,
-          2,
-          2,
-          2,
-          2,
-          2
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
         ]
       },
       "startGold": 130,
@@ -465,6 +645,53 @@
             "favoredEnemy": 1,
             "maxHp": 8
           }
+        },
+        {
+          "level": 11,
+          "name": "狩猎律动",
+          "desc": "攻击动作改为对范围内每个敌人各射一箭（简化为额外攻击 +1）。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 13,
+          "name": "偷袭提升",
+          "desc": "偷袭伤害 +1d6。",
+          "effects": {}
+        },
+        {
+          "level": 14,
+          "name": "隐匿于野",
+          "desc": "专注移动与隐匿：先攻 +2，隐匿检定 +2。",
+          "effects": {
+            "initBonus": 2,
+            "skillBonus": 2
+          }
+        },
+        {
+          "level": 15,
+          "name": "宿敌提升",
+          "desc": "对宿敌的伤害再 +2。",
+          "effects": {
+            "favoredEnemy": 2
+          }
+        },
+        {
+          "level": 18,
+          "name": "猎鹰之眼",
+          "desc": "远程攻击不会再因距离吃亏（近身射击不再劣势）。",
+          "effects": {
+            "farShot": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "克敌制胜",
+          "desc": "每场战斗第一次攻击必定命中并附加 5 点伤害。",
+          "effects": {
+            "firstAttackAdvantage": 1
+          }
         }
       ],
       "subclasses": [
@@ -479,6 +706,14 @@
               "desc": "对生命上限高于你的敌人，每回合第一次命中额外造成 1d8 伤害。",
               "effects": {
                 "giantKiller": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "巨兽杀手·进阶",
+              "desc": "对大型敌人的伤害 +2。",
+              "effects": {
+                "dmg": 2
               }
             },
             {
@@ -498,6 +733,14 @@
                 "hit": 2,
                 "critRange": 19
               }
+            },
+            {
+              "level": 14,
+              "name": "猎杀专家",
+              "desc": "每场战斗第一次攻击必定命中。",
+              "effects": {
+                "firstAttackAdvantage": 1
+              }
             }
           ]
         },
@@ -516,6 +759,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "暗影之眼",
+              "desc": "黑暗中也能看清；先攻 +2。",
+              "effects": {
+                "initBonus": 2
+              }
+            },
+            {
               "level": 7,
               "name": "暗影之眼",
               "desc": "在黑暗中隐形；每场战斗第一次攻击有优势。",
@@ -530,6 +781,14 @@
               "effects": {
                 "battleStartTempHp": 10,
                 "ac": 1
+              }
+            },
+            {
+              "level": 14,
+              "name": "幽域之影",
+              "desc": "每回合第一次攻击若命中，额外造成 1d6 暗蚀伤害。",
+              "effects": {
+                "elemDmg": 3
               }
             }
           ]
@@ -567,13 +826,38 @@
       "subclassLevel": 1,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": {
         "type": "full",
         "ability": "wis",
         "cantrips": 3,
-        "prepared": true
+        "prepared": true,
+        "cantripsByLevel": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
       },
       "startGold": 110,
       "hitDiceCount": 8,
@@ -596,6 +880,14 @@
           }
         },
         {
+          "level": 6,
+          "name": "引导神力·二",
+          "desc": "每次休息可以引导神力两次。",
+          "effects": {
+            "channelUses": 1
+          }
+        },
+        {
           "level": 8,
           "name": "神圣打击",
           "desc": "每回合第一次武器命中额外造成 1d8 光耀伤害。",
@@ -609,6 +901,46 @@
           "desc": "每局一次，生命降到 0 时以一半生命复活。",
           "effects": {
             "divineIntervention": 1
+          }
+        },
+        {
+          "level": 11,
+          "name": "摧毁亡灵·进阶",
+          "desc": "可以摧毁更强大的亡灵（更高 CR 直接湮灭）。",
+          "effects": {
+            "destroyUndead": 2
+          }
+        },
+        {
+          "level": 14,
+          "name": "摧毁亡灵·高阶",
+          "desc": "湮灭门槛再提高一档。",
+          "effects": {
+            "destroyUndead": 2
+          }
+        },
+        {
+          "level": 17,
+          "name": "摧毁亡灵·大师",
+          "desc": "湮灭门槛再提高一档。",
+          "effects": {
+            "destroyUndead": 2
+          }
+        },
+        {
+          "level": 18,
+          "name": "引导神力·三",
+          "desc": "每次休息可以引导神力三次。",
+          "effects": {
+            "channelUses": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "神力干预·必成",
+          "desc": "神力干预必定成功（不再掷骰）。",
+          "effects": {
+            "divineInterventionImproved": 1
           }
         }
       ],
@@ -650,6 +982,14 @@
               "effects": {
                 "divineStrike": 1
               }
+            },
+            {
+              "level": 14,
+              "name": "至善治疗",
+              "desc": "你施放的治疗法术额外回复 +10。",
+              "effects": {
+                "healBonus": 10
+              }
             }
           ]
         },
@@ -690,6 +1030,15 @@
               "desc": "法术强度 +3。",
               "effects": {
                 "spellDmg": 3
+              }
+            },
+            {
+              "level": 14,
+              "name": "光耀庇护",
+              "desc": "AC +1，法术 DC +1。",
+              "effects": {
+                "ac": 1,
+                "spellDc": 1
               }
             }
           ]
@@ -733,6 +1082,14 @@
                 "extraAttack": 1,
                 "dmg": 1
               }
+            },
+            {
+              "level": 14,
+              "name": "神圣军备·进阶",
+              "desc": "伤害再 +2。",
+              "effects": {
+                "dmg": 2
+              }
             }
           ]
         }
@@ -766,7 +1123,10 @@
       "subclassLevel": 2,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": {
         "type": "full",
@@ -774,7 +1134,30 @@
         "cantrips": 3,
         "spellbook": true,
         "spellsAtLevel1": 6,
-        "spellsPerLevel": 2
+        "spellsPerLevel": 2,
+        "cantripsByLevel": [
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "prepared": true
       },
       "startGold": 100,
       "hitDiceCount": 6,
@@ -834,6 +1217,22 @@
             "spellDmg": 2,
             "spellDc": 1
           }
+        },
+        {
+          "level": 18,
+          "name": "法术掌控",
+          "desc": "一~二环法术不再消耗法术位（每场战斗各一次免费施放）。",
+          "effects": {
+            "spellMastery": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "署名法术",
+          "desc": "每场战斗可以免费施放一次三环法术。",
+          "effects": {
+            "signatureSpell": 1
+          }
         }
       ],
       "subclasses": [
@@ -865,6 +1264,15 @@
               "desc": "法术伤害骰翻倍的效果改为：所有伤害法术 +3 伤害与 +1 DC。",
               "effects": {
                 "spellDmg": 3,
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 14,
+              "name": "过载塑能",
+              "desc": "塑能法术伤害再 +3，法术 DC +1。",
+              "effects": {
+                "elemDmg": 3,
                 "spellDc": 1
               }
             }
@@ -900,6 +1308,14 @@
                 "dr": 3,
                 "ac": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "反制结界",
+              "desc": "奥术结界的容量翻倍。",
+              "effects": {
+                "arcaneWard": 1
+              }
             }
           ]
         },
@@ -932,6 +1348,14 @@
                 "spellDc": 1,
                 "spellDmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "坚韧咒文",
+              "desc": "召唤物生命 +10。",
+              "effects": {
+                "maxHp": 10
+              }
             }
           ]
         },
@@ -963,6 +1387,15 @@
               "effects": {
                 "spellDc": 1,
                 "maxHp": 8
+              }
+            },
+            {
+              "level": 14,
+              "name": "真实幻象",
+              "desc": "法术 DC 再 +1，法术强度 +2。",
+              "effects": {
+                "spellDc": 1,
+                "spellDmg": 2
               }
             }
           ]
@@ -1003,13 +1436,38 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": {
         "type": "half",
         "ability": "cha",
         "cantrips": 0,
-        "prepared": true
+        "prepared": true,
+        "cantripsByLevel": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
       },
       "startGold": 130,
       "hitDiceCount": 10,
@@ -1070,6 +1528,39 @@
             "fearImmune": 1,
             "maxHp": 10
           }
+        },
+        {
+          "level": 11,
+          "name": "至圣斩强化",
+          "desc": "每次近战命中都附加 1d8 光耀伤害。",
+          "effects": {
+            "improvedSmite": 1
+          }
+        },
+        {
+          "level": 14,
+          "name": "净化之触",
+          "desc": "附赠动作清除身上一个负面状态（每次长休两次）。",
+          "effects": {
+            "cleansingTouch": 1
+          }
+        },
+        {
+          "level": 18,
+          "name": "光环扩展",
+          "desc": "守护光环的范围与加值都提升（豁免加值再 +1）。",
+          "effects": {
+            "auraSave": 0,
+            "auraRange": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "神圣誓约",
+          "desc": "每场战斗一次，以一个动作进入强化形态：命中 +2、伤害 +5，持续 3 回合。",
+          "effects": {
+            "sacredOath": 1
+          }
         }
       ],
       "subclasses": [
@@ -1084,6 +1575,14 @@
               "desc": "每场战斗一次，附赠动作：3 回合内命中 +魅力调整值，武器视为魔法。",
               "effects": {
                 "sacredWeapon": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "奉献光环·进阶",
+              "desc": "光环豁免加值再 +1。",
+              "effects": {
+                "auraSave": 1
               }
             },
             {
@@ -1103,6 +1602,15 @@
                 "dr": 2,
                 "maxHp": 12
               }
+            },
+            {
+              "level": 14,
+              "name": "纯洁之魂·进阶",
+              "desc": "法术 DC +1，豁免 +1。",
+              "effects": {
+                "spellDc": 1,
+                "saveBonus": 1
+              }
             }
           ]
         },
@@ -1120,6 +1628,15 @@
               }
             },
             {
+              "level": 6,
+              "name": "灵魂追猎·进阶",
+              "desc": "对仇敌的伤害 +2。",
+              "effects": {
+                "vowOfEnmity": 1,
+                "dmg": 2
+              }
+            },
+            {
               "level": 7,
               "name": "不屈复仇者",
               "desc": "被击中后，你下一次攻击具有优势。",
@@ -1134,6 +1651,14 @@
               "effects": {
                 "dmg": 3,
                 "critRange": 19
+              }
+            },
+            {
+              "level": 14,
+              "name": "不屈复仇者",
+              "desc": "最大生命 +15。",
+              "effects": {
+                "maxHp": 15
               }
             }
           ]
@@ -1168,7 +1693,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellList": [
         "wizard"
@@ -1189,7 +1717,38 @@
           9,
           10,
           11,
-          12
+          12,
+          12,
+          13,
+          13,
+          14,
+          14,
+          15,
+          15,
+          15,
+          15
+        ],
+        "cantripsByLevel": [
+          4,
+          4,
+          4,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
         ]
       },
       "startGold": 100,
@@ -1199,24 +1758,26 @@
         {
           "level": 1,
           "name": "术法来源",
-          "desc": "法术 DC +1，法术强度 +1。",
+          "desc": "魔法是你血脉里的东西：法术 DC +1、法术伤害 +1。",
           "effects": {
             "spellDc": 1,
             "spellDmg": 1
           }
         },
         {
-          "level": 1,
-          "name": "法术转生",
-          "desc": "每局额外获得 1 次短休。",
+          "level": 3,
+          "name": "超魔",
+          "desc": "你能把术法拧成别的形状。选择 2 项超魔，并获得术法点（上限等于你的术士等级，长休恢复）。",
+          "choice": "metamagic",
+          "choiceCount": 2,
           "effects": {
-            "restShort": 1
+            "metamagic": true
           }
         },
         {
           "level": 5,
           "name": "法术穿透",
-          "desc": "法术 DC +1，法术强度 +1。",
+          "desc": "法术 DC +1、法术伤害 +1。",
           "effects": {
             "spellDc": 1,
             "spellDmg": 1
@@ -1225,7 +1786,7 @@
         {
           "level": 6,
           "name": "血脉之力",
-          "desc": "最大生命 +8，受到伤害 -1。",
+          "desc": "血脉在你身上显形：最大生命 +8，减伤 1。",
           "effects": {
             "maxHp": 8,
             "dr": 1
@@ -1234,7 +1795,7 @@
         {
           "level": 8,
           "name": "强效术法",
-          "desc": "法术强度 +2。",
+          "desc": "法术伤害 +2。",
           "effects": {
             "spellDmg": 2
           }
@@ -1242,10 +1803,28 @@
         {
           "level": 10,
           "name": "真名术法",
-          "desc": "法术 DC +1，法术强度 +2。",
+          "desc": "法术 DC +1、法术伤害 +2；再选择 1 项超魔。",
           "effects": {
             "spellDc": 1,
             "spellDmg": 2
+          },
+          "choice": "metamagic",
+          "choiceCount": 1
+        },
+        {
+          "level": 17,
+          "name": "超魔·再启",
+          "desc": "再学一个新超魔。",
+          "effects": {},
+          "choice": "metamagic",
+          "choiceCount": 1
+        },
+        {
+          "level": 20,
+          "name": "法术转生",
+          "desc": "每次短休恢复 4 点术法点。",
+          "effects": {
+            "sorcerousRestoration": 1
           }
         }
       ],
@@ -1265,6 +1844,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "元素亲和",
+              "desc": "对应元素的法术伤害 +3。",
+              "effects": {
+                "elemDmg": 3
+              }
+            },
+            {
               "level": 7,
               "name": "元素亲和",
               "desc": "火焰/冰霜/闪电伤害 +2。",
@@ -1279,6 +1866,15 @@
               "effects": {
                 "maxHp": 12,
                 "dr": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "龙之翼",
+              "desc": "获得飞行；AC +1。",
+              "effects": {
+                "flight": 1,
+                "ac": 1
               }
             }
           ]
@@ -1297,6 +1893,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "幸运爆发",
+              "desc": "每场战斗一次，可以把一次掷骰结果改成 20。",
+              "effects": {
+                "luckPoints": 1
+              }
+            },
+            {
               "level": 7,
               "name": "幸运爆发",
               "desc": "每场战斗额外获得 1 次重投；法术强度 +1。",
@@ -1309,6 +1913,14 @@
               "level": 10,
               "name": "熵增",
               "desc": "法术强度 +3。",
+              "effects": {
+                "spellDmg": 3
+              }
+            },
+            {
+              "level": 14,
+              "name": "熵增",
+              "desc": "法术伤害 +3。",
               "effects": {
                 "spellDmg": 3
               }
@@ -1351,7 +1963,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellList": [
         "wizard",
@@ -1363,7 +1978,6 @@
         "cantrips": 2,
         "known": true,
         "knownByLevel": [
-          3,
           4,
           5,
           6,
@@ -1373,7 +1987,39 @@
           10,
           11,
           12,
-          13
+          14,
+          15,
+          15,
+          16,
+          18,
+          19,
+          19,
+          20,
+          22,
+          22,
+          22
+        ],
+        "cantripsByLevel": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
         ]
       },
       "startGold": 110,
@@ -1383,10 +2029,12 @@
         {
           "level": 1,
           "name": "吟游灵感",
-          "desc": "所有技能检定 +1；最大生命 +6。",
+          "desc": "附赠动作：把一枚 d6（随等级成长为 d8/d10/d12）交给同伴——下一次攻击、豁免或检定可以加上它。",
           "effects": {
             "skillBonus": 1,
-            "maxHp": 6
+            "maxHp": 6,
+            "bardicInspiration": true,
+            "bardDie": 6
           }
         },
         {
@@ -1406,6 +2054,15 @@
           }
         },
         {
+          "level": 5,
+          "name": "激励骰·d8",
+          "desc": "吟游激励骰提升为 d8，且短休即可恢复灵感。",
+          "effects": {
+            "bardDie": 2,
+            "fontOfInspiration": 1
+          }
+        },
+        {
           "level": 8,
           "name": "精通表演",
           "desc": "技能检定 +1，法术强度 +1。",
@@ -1422,6 +2079,46 @@
             "spellDc": 1,
             "spellDmg": 2
           }
+        },
+        {
+          "level": 10,
+          "name": "激励骰·d10",
+          "desc": "吟游激励骰提升为 d10。",
+          "effects": {
+            "bardDie": 2
+          }
+        },
+        {
+          "level": 10,
+          "name": "魔法秘典·二",
+          "desc": "又从任意职业法术列表中偷来两个法术（计入已知法术）。",
+          "effects": {
+            "magicalSecrets": 1
+          }
+        },
+        {
+          "level": 14,
+          "name": "魔法秘典·三",
+          "desc": "再偷两个法术。",
+          "effects": {
+            "magicalSecrets": 1
+          }
+        },
+        {
+          "level": 15,
+          "name": "激励骰·d12",
+          "desc": "吟游激励骰提升为 d12。",
+          "effects": {
+            "bardDie": 2
+          }
+        },
+        {
+          "level": 20,
+          "name": "至尊激励",
+          "desc": "吟游激励用完后，短休外也可在战斗开始时立刻恢复一次。",
+          "effects": {
+            "superiorInspiration": 1
+          }
         }
       ],
       "subclasses": [
@@ -1436,6 +2133,14 @@
               "desc": "AC +1。",
               "effects": {
                 "ac": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "战歌·额外攻击",
+              "desc": "使用攻击动作时攻击两次。",
+              "effects": {
+                "extraAttack": 1
               }
             },
             {
@@ -1455,6 +2160,15 @@
                 "critRange": 19,
                 "dmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "斩杀之歌",
+              "desc": "命中 +1，伤害 +2。",
+              "effects": {
+                "hit": 1,
+                "dmg": 2
+              }
             }
           ]
         },
@@ -1472,6 +2186,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "万能学识·二",
+              "desc": "再从任意职业法术列表里偷两个法术。",
+              "effects": {
+                "magicalSecrets": 1
+              }
+            },
+            {
               "level": 7,
               "name": "切割咒文",
               "desc": "法术强度 +2。",
@@ -1486,6 +2208,15 @@
               "effects": {
                 "skillBonus": 2,
                 "maxHp": 8
+              }
+            },
+            {
+              "level": 14,
+              "name": "切割咒文·进阶",
+              "desc": "技能检定 +2，法术 DC +1。",
+              "effects": {
+                "skillBonus": 2,
+                "spellDc": 1
               }
             }
           ]
@@ -1526,7 +2257,10 @@
       "subclassLevel": 2,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellList": [
         "cleric"
@@ -1535,7 +2269,29 @@
         "type": "full",
         "ability": "wis",
         "cantrips": 2,
-        "prepared": true
+        "prepared": true,
+        "cantripsByLevel": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
       },
       "startGold": 100,
       "hitDiceCount": 8,
@@ -1558,17 +2314,18 @@
         {
           "level": 2,
           "name": "野性形态",
-          "desc": "每日数次变身为野兽（简化为：AC +1，伤害 +1）。",
+          "desc": "你可以变成一头野兽：临时生命 4×等级，伤害 +2、减伤 1、AC +1，持续到战斗结束。每天 2 次，长休恢复。",
           "effects": {
-            "ac": 1,
-            "dmg": 1
+            "wildShape": 2
           }
         },
         {
           "level": 4,
-          "name": "属性提升",
-          "desc": "两项属性各 +1（在升级界面分配）。",
-          "effects": {}
+          "name": "野性形态·进阶",
+          "desc": "可以变成更强大的野兽（挑战等级上限提高）。",
+          "effects": {
+            "wildShapeCR": 1
+          }
         },
         {
           "level": 6,
@@ -1583,12 +2340,45 @@
           }
         },
         {
+          "level": 8,
+          "name": "野性形态·高阶",
+          "desc": "挑战等级上限再提高一档。",
+          "effects": {
+            "wildShapeCR": 1
+          }
+        },
+        {
           "level": 10,
           "name": "至尊野性",
           "desc": "最大生命 +10，法术强度 +1。",
           "effects": {
             "maxHp": 10,
             "spellDmg": 1
+          }
+        },
+        {
+          "level": 14,
+          "name": "兽形施法",
+          "desc": "变形后依然可以施放法术。",
+          "effects": {
+            "beastSpells": 1
+          }
+        },
+        {
+          "level": 18,
+          "name": "不朽之躯",
+          "desc": "衰老减缓；每场战斗开始时回复 10 点生命。",
+          "effects": {
+            "timelessBody": 1,
+            "battleStartTempHp": 8
+          }
+        },
+        {
+          "level": 20,
+          "name": "大德鲁伊",
+          "desc": "野性形态次数无限，短休即可恢复。",
+          "effects": {
+            "archdruid": 1
           }
         }
       ],
@@ -1623,6 +2413,15 @@
                 "dmg": 2,
                 "spellDc": 1
               }
+            },
+            {
+              "level": 14,
+              "name": "远古之躯",
+              "desc": "变形后伤害 +2，AC +1。",
+              "effects": {
+                "dmg": 2,
+                "ac": 1
+              }
             }
           ]
         },
@@ -1652,6 +2451,15 @@
               "name": "自然主宰",
               "desc": "法术强度 +2。",
               "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "自然主宰",
+              "desc": "法术 DC +1，法术强度 +2。",
+              "effects": {
+                "spellDc": 1,
                 "spellDmg": 2
               }
             }
@@ -1691,7 +2499,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellList": [
         "wizard"
@@ -1700,7 +2511,30 @@
         "type": "half",
         "ability": "int",
         "cantrips": 2,
-        "prepared": true
+        "prepared": true,
+        "halfUp": true,
+        "cantripsByLevel": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
       },
       "startGold": 120,
       "hitDiceCount": 8,
@@ -1721,6 +2555,22 @@
           }
         },
         {
+          "level": 1,
+          "name": "奥术附魔",
+          "desc": "你把奥术力场焊进武器与护甲。你的武器攻击被视为魔法攻击，可无视非魔法物理抗性。",
+          "effects": {
+            "magicalStrikes": true
+          }
+        },
+        {
+          "level": 2,
+          "name": "奥术冲量",
+          "desc": "附赠动作：你给武器注入一束奥能，下一次武器攻击额外造成 1d6 力场伤害（每回合一次）。",
+          "effects": {
+            "arcaneJolt": true
+          }
+        },
+        {
           "level": 3,
           "name": "奥术复元",
           "desc": "每局额外获得 1 次短休。",
@@ -1738,18 +2588,37 @@
           }
         },
         {
-          "level": 8,
-          "name": "属性提升",
-          "desc": "两项属性各 +1（在升级界面分配）。",
-          "effects": {}
-        },
-        {
           "level": 10,
           "name": "法术枪",
           "desc": "法术强度 +2，法术 DC +1。",
           "effects": {
             "spellDmg": 2,
             "spellDc": 1
+          }
+        },
+        {
+          "level": 11,
+          "name": "法术 storing",
+          "desc": "可以把一个一~二环法术存进物品里留待后用（简化为额外一次免费施法）。",
+          "effects": {
+            "spellStoringItem": 1
+          }
+        },
+        {
+          "level": 15,
+          "name": "魔能护体",
+          "desc": "AC +2。",
+          "effects": {
+            "ac": 2
+          }
+        },
+        {
+          "level": 20,
+          "name": "灵魂工匠",
+          "desc": "最大生命 +20，所有豁免 +1。",
+          "effects": {
+            "maxHp": 20,
+            "saveBonus": 1
           }
         }
       ],
@@ -1768,6 +2637,14 @@
               }
             },
             {
+              "level": 6,
+              "name": "活化药剂",
+              "desc": "消耗品效果增强：使用消耗品时额外回复 5 点生命。",
+              "effects": {
+                "healBonus": 5
+              }
+            },
+            {
               "level": 7,
               "name": "活化药剂",
               "desc": "最大生命 +6。",
@@ -1781,6 +2658,15 @@
               "desc": "法术强度 +2。",
               "effects": {
                 "spellDmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "万能溶剂",
+              "desc": "法术强度 +3，最大生命 +10。",
+              "effects": {
+                "spellDmg": 3,
+                "maxHp": 10
               }
             }
           ]
@@ -1800,6 +2686,15 @@
               }
             },
             {
+              "level": 6,
+              "name": "重装核心",
+              "desc": "钢铁卫士获得额外生命与伤害（守卫更强）。",
+              "effects": {
+                "dmg": 2,
+                "maxHp": 10
+              }
+            },
+            {
               "level": 7,
               "name": "重装核心",
               "desc": "最大生命 +8，AC +1。",
@@ -1815,6 +2710,15 @@
               "effects": {
                 "dmg": 2,
                 "hit": 1
+              }
+            },
+            {
+              "level": 14,
+              "name": "超频核心",
+              "desc": "命中 +1，伤害 +2。",
+              "effects": {
+                "hit": 1,
+                "dmg": 2
               }
             }
           ]
@@ -1852,7 +2756,10 @@
       "subclassLevel": 1,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellList": [
         "wizard",
@@ -1864,7 +2771,6 @@
         "cantrips": 2,
         "known": true,
         "knownByLevel": [
-          1,
           2,
           3,
           4,
@@ -1874,7 +2780,39 @@
           8,
           9,
           10,
-          11
+          10,
+          11,
+          11,
+          12,
+          12,
+          13,
+          13,
+          14,
+          14,
+          15,
+          15
+        ],
+        "cantripsByLevel": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
         ]
       },
       "startGold": 100,
@@ -1884,31 +2822,131 @@
         {
           "level": 1,
           "name": "邪术师法术",
-          "desc": "魅力施法者（契约魔法：法术位少但皆为最高环，短休恢复）。",
+          "desc": "你的法术来自契约，而非学习。法术位少，但每次短休都能拿回来。",
           "effects": {}
         },
         {
           "level": 1,
           "name": "邪能之触",
-          "desc": "法术 DC +1。",
+          "desc": "契约烙在你的语言里：法术 DC +1。",
           "effects": {
             "spellDc": 1
           }
         },
         {
+          "level": 2,
+          "name": "魔能祈愿",
+          "desc": "你的主人允许你从它的力量里取走一小块。选择 2 项魔能祈愿。",
+          "choice": "invocation",
+          "choiceCount": 2
+        },
+        {
+          "level": 3,
+          "name": "魔契恩泽",
+          "desc": "契约结成实物。选择一项魔契：书、链、刃。",
+          "choice": "pactBoon",
+          "choiceCount": 1
+        },
+        {
+          "level": 5,
+          "name": "魔能祈愿·深",
+          "desc": "你索取更多。再选择 1 项魔能祈愿。",
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
           "level": 6,
           "name": "复生契约",
-          "desc": "每局额外获得 1 次短休。",
+          "desc": "你的主人在你倒下时拉了你一把：每天额外一次短休。",
           "effects": {
             "restShort": 1
           }
         },
         {
+          "level": 7,
+          "name": "魔能祈愿·秘",
+          "desc": "再选择 1 项魔能祈愿。",
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
+          "level": 9,
+          "name": "魔能祈愿·再启",
+          "desc": "再学一个新的魔能祈愿。",
+          "effects": {},
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
           "level": 10,
           "name": "契约主宰",
-          "desc": "法术强度 +2。",
+          "desc": "你不再是乞求者：法术伤害 +2。",
           "effects": {
             "spellDmg": 2
+          }
+        },
+        {
+          "level": 11,
+          "name": "玄奥秘术·六环",
+          "desc": "每日一次，可以施放一个六环法术而不消耗法术位。",
+          "effects": {
+            "mysticArcanum": 6
+          }
+        },
+        {
+          "level": 12,
+          "name": "魔能祈愿·再启",
+          "desc": "再学一个新的魔能祈愿。",
+          "effects": {},
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
+          "level": 13,
+          "name": "玄奥秘术·七环",
+          "desc": "每日一次，可以施放一个七环法术而不消耗法术位。",
+          "effects": {
+            "mysticArcanum": 7
+          }
+        },
+        {
+          "level": 15,
+          "name": "魔能祈愿·再启",
+          "desc": "再学一个新的魔能祈愿。",
+          "effects": {},
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
+          "level": 15,
+          "name": "玄奥秘术·八环",
+          "desc": "每日一次，可以施放一个八环法术而不消耗法术位。",
+          "effects": {
+            "mysticArcanum": 8
+          }
+        },
+        {
+          "level": 17,
+          "name": "玄奥秘术·九环",
+          "desc": "每日一次，可以施放一个九环法术而不消耗法术位。",
+          "effects": {
+            "mysticArcanum": 9
+          }
+        },
+        {
+          "level": 18,
+          "name": "魔能祈愿·再启",
+          "desc": "再学一个新的魔能祈愿。",
+          "effects": {},
+          "choice": "invocation",
+          "choiceCount": 1
+        },
+        {
+          "level": 20,
+          "name": " Eldritch 主宰",
+          "desc": "每场战斗开始时，用附赠动作恢复全部契约法术位（每日一次）。",
+          "effects": {
+            "eldritchMaster": 1
           }
         }
       ],
@@ -1942,6 +2980,14 @@
                 "spellDc": 1,
                 "dmg": 1
               }
+            },
+            {
+              "level": 14,
+              "name": "烈焰仆从·进阶",
+              "desc": "魔能爆伤害 +3。",
+              "effects": {
+                "elemDmg": 3
+              }
             }
           ]
         },
@@ -1972,6 +3018,15 @@
               "desc": "伤害 +2。",
               "effects": {
                 "dmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "心灵侵蚀",
+              "desc": "法术 DC 再 +1，法术强度 +2。",
+              "effects": {
+                "spellDc": 1,
+                "spellDmg": 2
               }
             }
           ]
@@ -2009,7 +3064,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": null,
       "startGold": 80,
@@ -2036,11 +3094,27 @@
           }
         },
         {
+          "level": 1,
+          "name": "无甲防御",
+          "desc": "不穿护甲时，你的 AC = 10 + 敏捷调整值 + 体质调整值。",
+          "effects": {
+            "unarmoredCon": true
+          }
+        },
+        {
           "level": 2,
           "name": "鲁莽攻击",
-          "desc": "伤害 +1。",
+          "desc": "狂暴中可以选择鲁莽攻击：本回合你的攻击具有优势，但攻击你的敌人也具有优势。",
           "effects": {
-            "dmg": 1
+            "reckless": true
+          }
+        },
+        {
+          "level": 3,
+          "name": "狂暴·再启",
+          "desc": "每日狂暴次数 +1。",
+          "effects": {
+            "rageMax": 1
           }
         },
         {
@@ -2049,6 +3123,14 @@
           "desc": "使用攻击动作时攻击两次。",
           "effects": {
             "extraAttack": 1
+          }
+        },
+        {
+          "level": 6,
+          "name": "狂暴·再启",
+          "desc": "每日狂暴次数 +1。",
+          "effects": {
+            "rageMax": 1
           }
         },
         {
@@ -2065,6 +3147,72 @@
           "desc": "伤害 +2。",
           "effects": {
             "dmg": 2
+          }
+        },
+        {
+          "level": 9,
+          "name": "凶蛮重击",
+          "desc": "重击时额外附加一颗武器伤害骰。",
+          "effects": {
+            "brutalCrit": 1
+          }
+        },
+        {
+          "level": 11,
+          "name": "坚韧狂暴",
+          "desc": "狂暴中倒下时，可以过一次体质豁免（DC 10）以 1 点生命站起。",
+          "effects": {
+            "relentlessRage": 1
+          }
+        },
+        {
+          "level": 12,
+          "name": "狂暴·再启",
+          "desc": "每日狂暴次数 +1。",
+          "effects": {
+            "rageMax": 1
+          }
+        },
+        {
+          "level": 13,
+          "name": "凶蛮重击·二",
+          "desc": "重击时再额外附加一颗武器伤害骰。",
+          "effects": {
+            "brutalCrit": 1
+          }
+        },
+        {
+          "level": 15,
+          "name": "持续狂暴",
+          "desc": "狂暴不会因为一回合没有攻击而中断。",
+          "effects": {
+            "persistentRage": 1
+          }
+        },
+        {
+          "level": 17,
+          "name": "狂暴·再启",
+          "desc": "每日狂暴次数 +1。",
+          "effects": {
+            "rageMax": 1
+          }
+        },
+        {
+          "level": 17,
+          "name": "凶蛮重击·三",
+          "desc": "重击时再额外附加一颗武器伤害骰。",
+          "effects": {
+            "brutalCrit": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "原始勇士",
+          "desc": "力量与体质各 +4（上限提高到 24）。",
+          "effects": {
+            "attrStr": 4,
+            "attrCon": 4,
+            "attrCap": 4
           }
         }
       ],
@@ -2097,6 +3245,14 @@
               "effects": {
                 "dmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "无情狂怒",
+              "desc": "狂暴中伤害 +2。",
+              "effects": {
+                "rageDmg": 2
+              }
             }
           ]
         },
@@ -2128,6 +3284,15 @@
               "effects": {
                 "dmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "狼之图腾",
+              "desc": "狂暴中命中 +1，伤害 +1。",
+              "effects": {
+                "hit": 1,
+                "dmg": 1
+              }
             }
           ]
         },
@@ -2158,6 +3323,14 @@
               "desc": "伤害 +2。",
               "effects": {
                 "dmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "不灭信仰",
+              "desc": "狂暴中倒下时，一次体质豁免（DC 10）成功即以半血站起。",
+              "effects": {
+                "relentlessRage": 1
               }
             }
           ]
@@ -2192,7 +3365,10 @@
       "subclassLevel": 3,
       "asiLevels": [
         4,
-        8
+        8,
+        12,
+        16,
+        19
       ],
       "spellcasting": null,
       "startGold": 50,
@@ -2242,12 +3418,61 @@
           }
         },
         {
+          "level": 7,
+          "name": "灵动闪避",
+          "desc": "豁免成功时不再受伤害；豁免失败也只受一半。",
+          "effects": {
+            "evasion": 1
+          }
+        },
+        {
           "level": 10,
           "name": "宗师之力",
           "desc": "最大生命 +8，伤害 +2。",
           "effects": {
             "maxHp": 8,
             "dmg": 2
+          }
+        },
+        {
+          "level": 10,
+          "name": "纯净之躯",
+          "desc": "免疫毒素与疾病；最大生命 +10。",
+          "effects": {
+            "poisonImmune": 1,
+            "maxHp": 10
+          }
+        },
+        {
+          "level": 13,
+          "name": "日月之舌",
+          "desc": "所有语言你都听得懂（事件检定 +2）。",
+          "effects": {
+            "skillBonus": 2
+          }
+        },
+        {
+          "level": 14,
+          "name": "金刚之魂",
+          "desc": "获得全部豁免熟练。",
+          "effects": {
+            "diamondSoul": 1
+          }
+        },
+        {
+          "level": 18,
+          "name": "空灵之躯",
+          "desc": "每场战斗一次，以附赠动作进入虚无状态：受到的伤害减半，持续 2 回合。",
+          "effects": {
+            "emptyBody": 1
+          }
+        },
+        {
+          "level": 20,
+          "name": "完美自我",
+          "desc": "战斗开始时若气点为 0，立刻回复 4 点气。",
+          "effects": {
+            "perfectSelf": 1
           }
         }
       ],
@@ -2280,6 +3505,15 @@
               "effects": {
                 "dmg": 2
               }
+            },
+            {
+              "level": 14,
+              "name": "四两拨千斤",
+              "desc": "被近战命中时可以用反应反打（简化为伤害 +2）。",
+              "effects": {
+                "dmg": 2,
+                "riposte": 1
+              }
             }
           ]
         },
@@ -2311,6 +3545,14 @@
               "desc": "伤害 +2。",
               "effects": {
                 "dmg": 2
+              }
+            },
+            {
+              "level": 14,
+              "name": "暗影主宰",
+              "desc": "每场战斗一次，可以进入隐形状态两回合。",
+              "effects": {
+                "shadowMaster": 1
               }
             }
           ]

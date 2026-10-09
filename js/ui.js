@@ -49,6 +49,20 @@
   function saveBuilds(list) { writeJSON(BUILDS_KEY, list); }
   function lastBuild() { return readJSON(LAST_KEY, null); }
 
+  /* ---- 自动记忆：建卡过程中每一步都存草稿，下次进来直接沿用 ---- */
+  let draftSig = '';
+  /** 把当前建卡状态存为「上一套」。只在至少选了种族 + 职业后才存，避免用空配置覆盖掉有效记录 */
+  function rememberDraft(c) {
+    if (!c || !c.raceId || !c.classId) return;
+    try {
+      const b = captureBuild(c);
+      const sig = JSON.stringify([b.raceId, b.classId, b.subclassId, b.bgId, b.attrs, b.bonusChoice, b.skills, b.cantrips, b.spells, b.mc, b.pack, b.difficulty, b.name]);
+      if (sig === draftSig) return;   // 没变就不写
+      draftSig = sig;
+      writeJSON(LAST_KEY, b);
+    } catch (e) { /* 存档失败不影响游戏 */ }
+  }
+
   /** 从建卡状态里抽出可保存的字段 */
   function captureBuild(c) {
     return {
@@ -88,6 +102,40 @@
     }
     return parts.join(' / ');
   }
+  /** 把载入的配置对齐到当前职业（换职业/改数据后旧配置可能失效，直接开局会出问题） */
+  function sanitizeBuild(c) {
+    const cls = c.classId ? R.classDef(c.classId) : null;
+    if (!cls) return c;
+    if (c.subclassId && !(cls.subclasses || []).some((s) => s.id === c.subclassId)) c.subclassId = null;
+    if (cls.subclassLevel !== 1) c.subclassId = null;
+    const pool = (cls.skillChoices && cls.skillChoices.from) || [];
+    const need = cls.skillChoices ? cls.skillChoices.count : 0;
+    c.skills = (c.skills || []).filter((s) => pool.includes(s));
+    for (const s of pool) { if (c.skills.length >= need) break; if (!c.skills.includes(s)) c.skills.push(s); }
+    c.skills = c.skills.slice(0, need);
+    if (cls.spellcasting) {
+      const eff = NK.Rules.spellListOf(cls.id);
+      const okIds = new Set(NK.Data.get('spells').spells.filter((s) => s.classes.some((x) => eff.includes(x))).map((s) => s.id));
+      // 只剔除「不属于这个职业 / 已不存在」的法术；不按需求量截断
+      // （半施法职业 1 级需求为 0，但配置里带的法术是有效的，不能清掉）
+      const uniq = (a) => a.filter((x, i) => a.indexOf(x) === i);
+      c.cantrips = uniq((c.cantrips || []).filter((id) => okIds.has(id)));
+      c.spells = uniq((c.spells || []).filter((id) => okIds.has(id)));
+    } else { c.cantrips = []; c.spells = []; }
+    const packs = NK.Items.startingPacks(c.classId);
+    if (!(c.pack >= 0 && c.pack < packs.length)) c.pack = 0;
+    if (!NK.Data.get('maps').difficulties.some((d) => d.id === c.difficulty)) c.difficulty = 1;
+    return c;
+  }
+
+  /** 进入建卡：传 b 就沿用那套配置（并标记为「已沿用」），不传就是全新一张白纸 */
+  function startCreate(b) {
+    App.create = sanitizeBuild(b ? applyBuild(newCreate(), b) : newCreate());
+    App.createRestored = !!b;
+    App.screen = 'create';
+    if (b) toast('已自动填入上一套配置，可以直接开局，也可以改任意一项。');
+  }
+
   function buildSummary(b) {
     const race = b.raceId ? R.raceDef(b.raceId) : null;
     const cls = b.classId ? R.classDef(b.classId) : null;
@@ -100,10 +148,10 @@
 
   /* ================= 建卡向导 ================= */
   function stepsFor(c) {
-    const s = ['race', 'class'];
+    const s = ['race', 'bg', 'class'];
     const cls = c.classId ? R.classDef(c.classId) : null;
     if (cls && cls.subclassLevel === 1) s.push('subclass');
-    s.push('bg', 'multiclass', 'attrs', 'skills');
+    s.push('attrs', 'skills');
     if (cls && cls.spellcasting) s.push('spells');
     s.push('pack', 'difficulty');
     return s;
@@ -119,9 +167,39 @@
     return out;
   }
 
+  /** 创建角色时，主职「需要选几个戏法 / 几个法术」——按实际可学池钳制，避免池子太小导致永远选不齐、卡死下一步 */
+  function spellNeeds(c) {
+    const cls = c.classId ? R.classDef(c.classId) : null;
+    const sc = cls && cls.spellcasting;
+    if (!sc) return { cantrips: 0, spells: 0 };
+    const mod = R.mod(previewAttrs(c)[sc.ability]);
+    const eff = NK.Rules.spellListOf(cls.id);
+    const poolLen = (lvl) => NK.Data.get('spells').spells.filter((s) => s.classes.some((x) => eff.includes(x)) && s.level === lvl).length;
+    const pool0 = poolLen(0), pool1 = poolLen(1);
+    const cantrips = Math.min(sc.cantrips || 0, pool0);
+    let spells = 0;
+    if (sc.spellbook) spells = Math.min(sc.spellsAtLevel1 || 6, pool1);
+    else if (sc.prepared) {
+      // 标准半施法职业（游侠/圣武士）1 级还没有法术位，无需准备；
+      // 奥术工匠这类「向上取整的半施法」从 1 级起就有，按「属性调整 + 1」准备，但不超过实际可学池
+      const noSlots = sc.type === 'half' && !sc.halfUp;
+      if (!noSlots) spells = Math.min(Math.max(1, mod + 1), pool1);
+    } else {
+      spells = Math.min((sc.knownByLevel ? sc.knownByLevel[0] : 0), pool1);
+    }
+    return { cantrips, spells };
+  }
+
+  /** 动作的稳定标识——跨回合认人用（法术位会变，用 id+环阶而不是下标） */
+  function actionKey(o) {
+    if (!o) return '';
+    return `${o.kind}:${o.id !== undefined ? o.id : 'i' + o.index}:${o.slot || 0}`;
+  }
+
   function createScreen() {
     if (!App.create) App.create = newCreate();
     const c = App.create;
+    rememberDraft(c);   // 每改一步就存草稿：中途退出、下次进来还能接着用
     const steps = stepsFor(c);
     if (c.step >= steps.length) c.step = steps.length - 1;
     const step = steps[c.step];
@@ -132,7 +210,7 @@
     let body = '';
 
     if (step === 'race') {
-      body = `<h2>选择种族</h2><div class="small dim">种族决定属性加值与一两个生理上的优势。</div>
+      body = `<h2>你降生于……</h2><div class="small dim">比背景更早，比选择也更早——血统是先于一切的东西。它决定属性加值与一两个生理上的优势。</div>
         <div class="cards" style="margin-top:10px">${NK.Data.get('races').races.map((r) => `
           <div class="card ${c.raceId === r.id ? 'sel' : ''}" data-act="c:race" data-id="${r.id}">
             <h3>${esc(r.name)}</h3>
@@ -141,7 +219,7 @@
             <hr><div class="small dim">${r.traits.map((t) => `<b>${esc(t.name)}</b>：${esc(t.desc)}`).join('<br>')}</div>
           </div>`).join('')}</div>`;
     } else if (step === 'class') {
-      body = `<h2>选择职业</h2><div class="small dim">生命骰决定血量，豁免熟练决定你抗什么，子职在 3 级选（牧师 1 级、法师 2 级）。</div>
+      body = `<h2>在踏入冒险之后，你决定成为……</h2><div class="small dim">生命骰决定血量，豁免熟练决定你抗什么，护甲与武器熟练决定你能穿什么、拿什么——起始装备也会照着这些给。子职在 3 级选（牧师/邪术师/术士 1 级、法师 2 级）。</div>
         <div class="cards" style="margin-top:10px">${NK.Data.get('classes').classes.map((k) => `
           <div class="card ${c.classId === k.id ? 'sel' : ''}" data-act="c:class" data-id="${k.id}">
             <h3>${esc(k.name)} <span class="tag">d${k.hitDie}</span></h3>
@@ -158,7 +236,7 @@
             <table>${s.features.map((f) => `<tr><td class="hint" style="width:44px">Lv.${f.level}</td><td><b>${esc(f.name)}</b></td><td class="small">${esc(f.desc)}</td></tr>`).join('')}</table>
           </div>`).join('')}</div>`;
     } else if (step === 'bg') {
-      body = `<h2>选择背景</h2><div class="small dim">背景给你两项技能熟练和一个小被动。</div>
+      body = `<h2>在踏入冒险之前，你曾经是……</h2><div class="small dim">那是你前半辈子留下的东西：两项技能熟练，和一个怎么也改不掉的习惯。</div>
         <div class="cards" style="margin-top:10px">${NK.Data.get('backgrounds').backgrounds.map((b) => `
           <div class="card ${c.bgId === b.id ? 'sel' : ''}" data-act="c:bg" data-id="${b.id}">
             <h3>${esc(b.name)}</h3>
@@ -166,34 +244,6 @@
             <div class="small gold" style="margin-top:4px">${esc(b.perk)}</div>
             <div class="small dim">技能：${b.skills.map((s) => R.skillDef(s).name).join('、')}</div>
           </div>`).join('')}</div>`;
-    } else if (step === 'multiclass') {
-      const primary = c.classId;
-      const mcTotal = (c.mc || []).reduce((a, e) => a + e.level, 0);
-      const total = 1 + mcTotal;   // 主职业 1 级 + 兼职
-      const remaining = 10 - total;
-      const others = NK.Data.get('classes').classes.filter((k) => k.id !== primary);
-      const mcInfo = (id) => { const e = (c.mc || []).find((x) => x.id === id); return e ? e.level : 0; };
-      const cards = others.map((k) => {
-        const lv = mcInfo(k.id);
-        return `<div class="card ${lv > 0 ? 'sel' : ''}">
-          <h3>${esc(k.name)} <span class="tag">d${k.hitDie}</span></h3>
-          <div class="small">${esc(k.blurb)}</div>
-          <div class="small dim" style="margin-top:4px">主属性 ${attrName(k.primary)}${k.spellcasting && k.spellcasting.ability !== k.primary ? ` / ${attrName(k.spellcasting.ability)}（施法）` : ''}　豁免 ${k.saveProfs.map(attrName).join('、')}</div>
-          <div class="spread" style="margin-top:8px">
-            <div class="small">兼职等级：<b>${lv}</b></div>
-            <div>
-              <button class="sm ghost" data-act="c:mc:lv" data-id="${k.id}" data-d="-1" ${lv <= 0 ? 'disabled' : ''}>−</button>
-              <button class="sm ghost" data-act="c:mc:lv" data-id="${k.id}" data-d="1" ${lv <= 0 || remaining <= 0 ? 'disabled' : ''}>+</button>
-              ${lv > 0 ? `<button class="sm" data-act="c:mc:rm" data-id="${k.id}">移除</button>` : ''}
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-      body = `<h2>兼职（可选）</h2>
-        <div class="small dim">主职业 <b>${esc(cls ? cls.name : '')}</b> 固定 1 级。你可以在这里追加最多 2 个兼职职业，总等级不超过 10。兼职会带来对应的特性、豁免与法术（兼职的法术会在升级时补齐）。</div>
-        <div class="panel tight" style="margin-top:8px"><div class="spread"><b>当前总等级</b><span class="tag ${remaining === 0 ? 'green' : 'gold'}">${total} / 10（剩余 ${remaining}）</span></div></div>
-        <div class="cards" style="margin-top:10px">${cards}</div>
-        <div class="small dim" style="margin-top:8px">提示：兼职是不平衡的选择——它可以补足短板或叠加能力，但每个职业的升级节奏是独立的。想简单就跳过这步，直接「下一步」。</div>`;
     } else if (step === 'attrs') {
       const pb = NK.Data.get('rules').pointBuy;
       const spent = R.pointBuyCost(c.attrs);
@@ -243,9 +293,9 @@
       const sc = cls.spellcasting;
       const attr = sc.ability;
       const mod = R.mod(previewAttrs(c)[attr]);
-      const needCantrips = sc.cantrips || 0;
-      const needSpells = sc.spellbook ? Math.min(sc.spellsAtLevel1 || 6, NK.Data.get('spells').spells.filter((s) => NK.Rules.spellListOf(cls.id).some((c) => s.classes.includes(c)) && s.level === 1).length)
-        : sc.prepared ? Math.max(1, mod + 1) : (sc.knownByLevel ? sc.knownByLevel[0] : 0);
+      const need = spellNeeds(c);
+      const needCantrips = need.cantrips;
+      const needSpells = need.spells;
       const eff = NK.Rules.spellListOf(cls.id);
       const list = (lvl) => NK.Data.get('spells').spells.filter((s) => s.classes.some((c) => eff.includes(c)) && s.level === lvl);
       body = `<h2>选择法术</h2>
@@ -263,7 +313,7 @@
         <div class="cards" style="margin-top:10px">${packs.map((p, i) => `
           <div class="card ${c.pack === i ? 'sel' : ''}" data-act="c:pack" data-idx="${i}">
             <h3>${esc(p.name)}</h3><div class="small">${esc(p.desc)}</div>
-            <div class="small dim" style="margin-top:6px">${p.weapons.map((w) => NK.Items.baseById(w).name).join('、')}${p.armor ? '、' + NK.Items.baseById(p.armor).name : ''}${p.shield ? '、' + NK.Items.baseById(p.shield).name : ''}、治疗药水 ×2</div>
+            <div class="small dim" style="margin-top:6px">${[p.weapons.length ? p.weapons.map((w) => NK.Items.baseById(w).name).join('、') : '空手（徒手打击）', p.armor ? NK.Items.baseById(p.armor).name : '不穿护甲', p.shield ? NK.Items.baseById(p.shield).name : null].filter(Boolean).join('　·　')}　＋　治疗药水 ×2${p.consumables && p.consumables.length ? '、' + p.consumables.map((cid) => (NK.Items.consumableById(cid) || {}).name).filter(Boolean).join('、') : ''}</div>
           </div>`).join('')}</div>`;
     } else if (step === 'difficulty') {
       body = `<h2>选择难度</h2><div class="small dim">这一局死了就是死了——没有跨局成长，所以难度只是你自己的选择。</div>
@@ -287,7 +337,6 @@
       if (step === 'class') return !!c.classId;
       if (step === 'subclass') return !!c.subclassId;
       if (step === 'bg') return !!c.bgId;
-      if (step === 'multiclass') return true;
       if (step === 'attrs') {
         if (R.pointBuyCost(c.attrs) < 0 || R.pointBuyCost(c.attrs) > NK.Data.get('rules').pointBuy.total) return false;
         if (race && race.bonusChoice && Object.keys(c.bonusChoice).length !== race.bonusChoice.count) return false;
@@ -295,12 +344,8 @@
       }
       if (step === 'skills') return c.skills.length === cls.skillChoices.count;
       if (step === 'spells') {
-        const sc = cls.spellcasting;
-        const mod = R.mod(previewAttrs(c)[sc.ability]);
-        const needC = sc.cantrips || 0;
-        const needS = sc.spellbook ? Math.min(sc.spellsAtLevel1 || 6, NK.Data.get('spells').spells.filter((s) => NK.Rules.spellListOf(cls.id).some((c) => s.classes.includes(c)) && s.level === 1).length)
-          : sc.prepared ? Math.max(1, mod + 1) : (sc.knownByLevel ? sc.knownByLevel[0] : 0);
-        return c.cantrips.length === needC && c.spells.length === needS;
+        const need = spellNeeds(c);
+        return c.cantrips.length === need.cantrips && c.spells.length === need.spells;
       }
       if (step === 'pack') return true;
       return true;
@@ -310,6 +355,24 @@
       <div class="center" style="margin:18px 0 10px"><h1>${GAME_NAME}</h1>
         <div class="dim small">5e 规则的单人地牢肉鸽。死了就重来，什么都不会留下。</div></div>
       ${bar}
+      ${(() => {
+        if (App.createRestored) {
+          return `<div class="panel tight" style="margin-top:8px"><div class="spread">
+            <div class="small">已自动沿用<b>上一套</b>：${esc(buildSummary(c))}${c.name ? '　（' + esc(c.name) + '）' : ''}
+              <div class="hint">下面每一页都已经填好了，想改哪一项就翻到那一页；也可以直接开局或清空重来。</div></div>
+            <div style="white-space:nowrap">
+              <button class="sm primary" data-act="c:start" ${canNext && c.step === steps.length - 1 ? '' : 'disabled'}>直接开局</button>
+              <button class="sm ghost" data-act="c:reset">清空重来</button>
+            </div></div></div>`;
+        }
+        // 白纸开局：第 1 页提示有记忆可用，一键就能把上一套搬回来
+        const lb = lastBuild();
+        if (!lb || c.step !== 0) return '';
+        return `<div class="panel tight" style="margin-top:8px"><div class="spread">
+          <div class="small">上一套：${esc(buildSummary(lb))}${lb.name ? '　（' + esc(lb.name) + '）' : ''}
+            <div class="hint">捏人的每一步都会自动记住，换一局不用从头点一遍。</div></div>
+          <div style="white-space:nowrap"><button class="sm primary" data-act="c:autofill">一键沿用</button></div></div></div>`;
+      })()}
       <div class="panel">${body}</div>
       <div class="spread" style="margin-top:6px">
         <div>${c.step > 0 ? '<button data-act="c:back">上一步</button>' : '<button data-act="c:title">返回标题</button>'}</div>
@@ -430,6 +493,12 @@
     for (const x of acts.items) opts.push({ group: '物品', kind: 'item', index: x.index, label: x.item.name, hint: x.item.desc, need: 'action' });
     const usable = opts.filter((o) => (o.need === 'bonus' ? c.turn.bonus : c.turn.action));
     if (App.selAction === undefined || App.selAction >= usable.length) App.selAction = 0;
+    // 记住上一回合用的那一手：还在列表里就自动选中，不用每回合重新挑
+    let remembered = null;
+    if (App.lastActionKey) {
+      const hit = usable.findIndex((o) => actionKey(o) === App.lastActionKey);
+      if (hit >= 0) { App.selAction = hit; remembered = usable[hit].label; }
+    }
     const groups = {};
     usable.forEach((o, i) => { (groups[o.group] = groups[o.group] || []).push({ o, i }); });
     const selHtml = usable.length ? `<select data-act="sel:action" class="selbox">
@@ -451,7 +520,9 @@
         <button data-act="b:end">结束回合</button>
       </div>
       ${!acts.canReachFront && acts.front ? `<div class="small red" style="margin-top:4px">${esc(NK.Combat.reachHint(p, acts.front))}</div>` : ''}
-      <div class="small dim" style="margin-top:6px">动作：${c.turn.action ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}　附赠动作：${c.turn.bonus ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}　<span class="hint">快捷键：1 攻击　2-9 法术　Enter 执行　Q 闪避　空格 结束回合</span></div>` : `<div class="actions">${c.over ? '<button class="primary" data-act="b:continue">继续</button>' : p.dying ? '<button data-act="b:pass">等待死亡豁免</button>' : '<span class="dim small">敌人的回合……</span>'}</div>`;
+      <div class="small dim" style="margin-top:6px">动作：${c.turn.action ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}　附赠动作：${c.turn.bonus ? '<span class="green">可用</span>' : '<span class="red">已用</span>'}
+        　${remembered ? `<span class="tag green">记住了上一手：${esc(remembered)}</span>` : App.lastActionKey === 'attack' ? '<span class="tag green">记住了上一手：攻击（按 1）</span>' : ''}
+        　<span class="hint">快捷键：1 攻击　2-9 法术　Enter 执行　Q 闪避　空格 结束回合</span></div>` : `<div class="actions">${c.over ? '<button class="primary" data-act="b:continue">继续</button>' : p.dying ? '<button data-act="b:pass">等待死亡豁免</button>' : '<span class="dim small">敌人的回合……</span>'}</div>`;
 
     const LOG_TAIL = 9;
     const folded = !App.logFull && c.log.length > LOG_TAIL + 3;
@@ -486,6 +557,14 @@
         <div class="col">
           <div class="panel tight"><h3 style="margin-bottom:6px">敌人</h3>${enemies}</div>
           <div class="panel tight"><h3 style="margin-bottom:6px">你</h3>${playerSummary(p)}${condTags(p) ? `<div style="margin-top:4px">${condTags(p)}</div>` : ''}
+            ${(c.allies && c.allies.length) ? `<div style="margin-top:6px"><div class="hint">你的召唤物（每回合自动出击，不占你的动作）</div>${c.allies.map((a) => {
+              const pct = Math.max(0, Math.round((a.hp / a.maxHp) * 100));
+              return `<div class="enemy" style="margin-top:4px">
+                <div class="spread"><b>${esc(a.name)}</b><span class="small dim">命中 ${fmt(a.atk.bonus)}　AC ${a.ac}　${esc(a.atk.dice)} ${esc(a.atk.type)}</span></div>
+                <div class="bar"><i style="width:${pct}%"></i></div>
+                <div class="small dim">HP ${Math.max(0, a.hp)}/${a.maxHp}　剩余 ${a.turnsLeft} 回合${p.concentration === a.spellId ? '　<span class="tag blue">专注维持中</span>' : ''}</div>
+                ${condTags(a)}</div>`;
+            }).join('')}</div>` : ''}
             <div class="small dim" style="margin-top:4px">右手：${itemLine(p.items.mainHand)}　左手：${itemLine(p.items.offHand)}　上身：${itemLine(p.items.body)}　戒指 ${R.ringCount(p)}/${R.ringCap(p)}${R.interference(p) > 0 ? '（干涉 -' + R.interference(p) + '）' : ''}</div></div>
         </div>
         <div class="col" style="flex:1.7 1 380px">
@@ -543,30 +622,107 @@
     const run = App.run;
     const p = run.player;
     const o = NK.Run.restOptions(run);
+    const hpPct = Math.round((p.hp / p.maxHp) * 100);
+    const slotLeft = p.slots.reduce((a, b) => a + b, 0);
+    const slotAll = p.slotsMax.reduce((a, b) => a + b, 0);
+    const rows = [
+      ['生命', `${p.hp}/${p.maxHp}（${hpPct}%）`, p.hp >= p.maxHp ? '不用补' : hpPct < 40 ? '<b class="red">偏低</b>' : '略缺'],
+      ['法术位', slotAll ? `${slotLeft}/${slotAll}` : '—', slotAll && slotLeft === 0 ? '<b class="red">空了</b>' : '—'],
+      ['生命骰', `${p.hitDice.left}/${p.hitDice.total}（d${p.hitDice.die}）`, p.hitDice.left === 0 ? '<b class="red">用完了</b>' : `${o.short.perDie} 点/颗`],
+      ['食物', `${run.food} 份`, run.food === 0 ? '<b class="red">没有</b>' : '够长休'],
+    ];
+    if (p.pactLevel) rows.push(['邪术环', `${p.pactSlots}/${p.pactSlotsMax}`, p.pactSlots === 0 ? '<b class="red">空了</b>' : '可用']);
+    if (p.flags.rage) rows.push(['狂暴', `${p.rageLeft || 0}/${p.rageMax}`, (p.rageLeft || 0) === 0 ? '需长休' : '可用']);
+    if (p.flags.ki) rows.push(['气', `${p.kiLeft}/${p.kiMax}`, p.kiLeft === 0 ? '需休息' : '可用']);
+    if (p.flags.superiority) rows.push(['卓越骰', `${p.superiorityLeft || 0}/${p.flags.superiority}`, (p.superiorityLeft || 0) === 0 ? '需休息' : '可用']);
+    if (p.flags.layOnHands) rows.push(['圣疗池', `${p.layPool}/${p.level * p.flags.layOnHands}`, p.layPool === 0 ? '需长休' : '可用']);
+    const list = (arr) => `<ul style="margin:4px 0 0 16px">${arr.map((x) => `<li class="small">${x}</li>`).join('')}</ul>`;
     return `
       <div class="panel tight"><div class="spread"><div><span class="tag green">营地</span> ${esc(run.map.acts[run.actIndex].name)}</div>
-        <div class="small dim">食物 ${run.food} 份　生命骰 ${p.hitDice.left}/${p.hitDice.total}（d${p.hitDice.die}）　<b>每个营地只能休息一次</b></div></div></div>
-      <div class="panel"><p>你找到一处背风的石缝。火升起来之后，才发现自己的手一直在抖。</p>${playerSummary(p)}${condTags(p) ? `<div style="margin-top:4px">${condTags(p)}</div>` : ''}</div>
+        <div class="small dim"><b>每个营地只能休息一次</b>，选完就不能改</div></div></div>
+      <div class="panel"><p>你找到一处背风的石缝。火升起来之后，才发现自己的手一直在抖。</p>
+        <h3 style="margin-top:10px">现在的你</h3>
+        <table>${rows.map((r) => `<tr><td style="width:76px" class="hint">${r[0]}</td><td class="mono">${r[1]}</td><td class="small">${r[2]}</td></tr>`).join('')}</table>
+        ${condTags(p) ? `<div style="margin-top:6px">${condTags(p)}</div>` : ''}</div>
       <div class="panel">
         <h3>你要做什么？</h3>
         <div class="cards">
           <div class="card ${o.short.ok ? '' : 'locked'}">
-            <h3>短休 <span class="tag green">不消耗食物</span></h3>
-            <div class="small">${esc(o.short.detail)}</div>
-            <div class="small dim">当前：生命 ${p.hp}/${p.maxHp}　生命骰 ${p.hitDice.left} 颗（每颗约 ${o.short.perDie} 点）</div>
-            <div style="margin-top:8px">${[1, 2, 3, 4, 5, 6].filter((n) => n <= p.hitDice.left).map((n) => `<button class="${n === Math.min(3, p.hitDice.left) ? 'primary' : ''}" data-act="rest:short" data-n="${n}" ${o.short.ok ? '' : 'disabled'}>用 ${n} 颗生命骰</button>`).join(' ')}</div>
+            <h3>短休　<span class="tag green">${esc(o.short.cost)}</span></h3>
+            <div class="small dim">${esc(o.short.detail)}</div>
+            <div style="margin-top:6px"><b class="small">能拿回来：</b>${list(o.short.restores)}</div>
+            <div class="hint" style="margin-top:6px">${esc(o.short.note)}</div>
+            <div class="small dim" style="margin-top:6px">每颗生命骰约回 ${o.short.perDie} 点（d${p.hitDice.die}/2 + 体质 ${fmt(R.mod(p.attrs.con))} + 1）</div>
+            <div style="margin-top:8px">${o.short.ok
+              ? (() => {
+                const want = App.lastRestDice ? Math.min(App.lastRestDice, p.hitDice.left) : Math.min(3, p.hitDice.left);
+                return [1, 2, 3, 4, 5, 6].filter((n) => n <= p.hitDice.left).map((n) =>
+                  `<button class="${n === want ? 'primary' : ''}" data-act="rest:short" data-n="${n}">用 ${n} 颗${App.lastRestDice === n ? '（上次）' : ''}</button>`).join(' ');
+              })()
+              : '<div class="small red">生命骰用完了——只有长休能回复它。</div>'}</div>
           </div>
           <div class="card ${o.long.ok ? '' : 'locked'}">
-            <h3>长休 <span class="tag ${run.food >= 1 ? 'gold' : 'red'}">消耗 1 份食物（${run.food}）</span></h3>
-            <div class="small">${esc(o.long.detail)}</div>
-            ${run.food < 1 ? '<div class="small red">你没有食物。长休需要 1 份——怪物会掉落，商店也能买。</div>' : ''}
+            <h3>长休　<span class="tag ${o.long.costKind}">${esc(o.long.cost)}</span></h3>
+            <div class="small dim">${esc(o.long.detail)}</div>
+            <div style="margin-top:6px"><b class="small">能拿回来：</b>${list(o.long.restores)}</div>
+            <div class="hint" style="margin-top:6px">${esc(o.long.note)}</div>
+            ${run.food < 1 ? '<div class="small red" style="margin-top:6px">你没有食物。长休需要 1 份——怪物会掉落，商店也能买。</div>' : ''}
             <div style="margin-top:8px"><button class="primary" data-act="rest:long" ${o.long.ok ? '' : 'disabled'}>长休</button></div>
           </div>
           <div class="card">
             <h3>不休息，继续前进</h3>
             <div class="small">把这次机会留给后面。每个营地只能休息一次，下一处营地不知道在多远。</div>
+            <div class="hint" style="margin-top:6px">适合：血量还够、法术位还剩、想把长休留到关底前。</div>
             <div style="margin-top:8px"><button data-act="rest:none">继续前进</button></div>
           </div>
+        </div>
+      </div>`;
+  }
+
+  /* ================= 长休后重新准备法术 ================= */
+  /** 可供准备的法术池：法师只能从法术书里挑，牧师/德鲁伊等可以从整个职业列表里挑 */
+  function preparePool(p) {
+    const cs = R.classEntries(p).filter((e) => { const sc = (R.classDef(e.id) || {}).spellcasting; return sc && sc.prepared; });
+    const hasBook = cs.some((e) => (R.classDef(e.id).spellcasting || {}).spellbook);
+    const maxLv = R.maxSpellLevel(p) || 1;
+    const ids = new Set();
+    for (const e of cs) {
+      const eff = R.spellListOf(e.id);
+      NK.Data.get('spells').spells.forEach((s) => {
+        if (!s.classes.some((c) => eff.includes(c))) return;
+        if (s.level === 0 || s.level > maxLv) return;
+        if (hasBook && !(p.knownSpells || []).includes(s.id)) return;
+        ids.add(s.id);
+      });
+    }
+    return NK.Data.get('spells').spells.filter((s) => ids.has(s.id));
+  }
+
+  function prepareScreen() {
+    const run = App.run;
+    if (!run) { App.screen = 'map'; return mapScreen(); }
+    const p = run.player;
+    App.prepSel = App.prepSel || (p.prepared || []).slice();
+    const cap = R.spellCapacity(p).prepared;
+    const pool = preparePool(p);
+    const LN = NK.Data.get('rules').slotLevelNames;
+    const over = App.prepSel.length > cap;
+    const card = (s) => `<div class="card ${App.prepSel.includes(s.id) ? 'sel' : ''}" data-act="p:toggle" data-id="${s.id}">
+        <h3>${esc(s.name)} <span class="tag blue">${LN[s.level - 1]}</span></h3>
+        <div class="small dim">${esc((s.desc || '').slice(0, 40))}</div></div>`;
+    return `
+      <div class="panel tight"><div class="spread"><div><span class="tag green">长休</span> 重新准备法术</div>
+        <div class="small dim">已选 <b class="${over ? 'red' : ''}">${App.prepSel.length}/${cap}</b></div></div></div>
+      <div class="panel"><p>你坐在火堆边翻着法术。今天要带哪些出门，是现在决定的事。</p>
+        <div class="small dim">${pool.some((s) => !(p.knownSpells || []).includes(s.id)) || !pool.length ? '' : '法师只能从法术书里挑（书里的法术才是你会的）。'}</div></div>
+      <div class="panel">
+        <h3>环阶法术</h3>
+        ${pool.length ? `<div class="cards">${pool.map(card).join('')}</div>` : '<div class="small dim">你现在还不会任何环阶法术。</div>'}
+      </div>
+      <div class="panel">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="primary" data-act="p:done" ${over ? 'disabled' : ''}>就这些（${App.prepSel.length}/${cap}）</button>
+          <button data-act="p:keep">保持上一次的选择</button>
         </div>
       </div>`;
   }
@@ -592,7 +748,41 @@
     if (!pend) return header + `<div class="panel"><p>升级结算完成。</p><div class="center"><button class="primary" data-act="l:done">继续</button></div></div>`;
 
     let body = '';
-    if (pend.kind === 'subclass') {
+    if (pend.kind === 'classlevel') {
+      const entries = R.classEntries(p);
+      const rows = entries.map((e) => {
+        const cd = R.classDef(e.id);
+        const s = (cd.subclasses || []).find((x) => x.id === e.subclassId);
+        return `<div class="card ${e.id === pend.classId ? 'sel' : ''}" data-act="l:classlevel" data-id="${e.id}">
+          <h3>${esc(cd.name)} ${e.level} 级</h3>
+          <div class="small">${e.subclassId ? esc(s ? s.name : '未定子职') : '<span class="dim">尚未选择子职</span>'}</div>
+          <div class="hint">${e.id === pend.classId ? '这一级默认加在这里 —— 点它确认' : `改投这里 → ${esc(cd.name)} ${e.level + 1} 级`}</div></div>`;
+      }).join('');
+      const news = NK.Data.get('classes').classes.filter((c) => !entries.some((e) => e.id === c.id)).map((c) => {
+        const need = c.primary;
+        const ok = (p.attrs[need] || 0) >= 13;
+        return `<div class="card ${ok ? '' : 'locked'}" ${ok ? `data-act="l:classlevel" data-id="${c.id}"` : ''}>
+          <h3>${esc(c.name)} <span class="tag gold">新兼职</span></h3>
+          <div class="small">${esc((c.features[0] || {}).desc || '')}</div>
+          <div class="hint">需要 ${attrName(need)} ≥ 13　（你 ${p.attrs[need]}）${ok ? '' : '　<span class="red">不满足</span>'}</div></div>`;
+      }).join('');
+      body = `<h2>职业进阶：第 ${pend.level} 级加在哪里？</h2>
+        <div class="small dim">当前：${entries.map((e) => esc(R.classDef(e.id).name) + ' ' + e.level).join('　／　')}　（总等级 ${R.totalLevel(p)}）</div>
+        <div class="small dim" style="margin-top:4px">兼职能拿到新职业的低阶特性与法术，但会稀释本职的高等级能力和高阶法术位。新开职业需要该职业主属性 ≥ 13。</div>
+        <div class="cards" style="margin-top:10px">${rows}</div>
+        ${news ? `<h3 style="margin-top:14px">新开一个兼职职业</h3><div class="cards">${news}</div>` : ''}`;
+    } else if (pend.kind === 'invocation' || pend.kind === 'metamagic' || pend.kind === 'pactBoon') {
+      const CFG = {
+        invocation: { list: 'invocations', title: '魔能祈愿', act: 'l:invocation', owned: p.invocations || [], lead: '你的主人允许你从它的力量里取走一小块。选了就是永久的。' },
+        metamagic: { list: 'metamagics', title: '超魔', act: 'l:metamagic', owned: p.metamagics || [], lead: `每个超魔消耗 1 点术法点，在施法前用附赠动作挂上。术法点上限 ${R.sorceryMax(p)}，长休恢复。` },
+        pactBoon: { list: 'pactBoons', title: '魔契恩泽', act: 'l:pactboon', owned: [], lead: '契约结成实物。这决定你之后怎么打——三选一，不能改。' },
+      }[pend.kind];
+      body = `<h2>${CFG.title}${pend.count > 1 ? `（选 ${pend.count} 项）` : ''}</h2>
+        <div class="small dim">${CFG.lead}</div>
+        <div class="cards" style="margin-top:10px">${NK.Data.get('rules')[CFG.list].filter((o) => !CFG.owned.includes(o.id)).map((o) => `
+          <div class="card" data-act="${CFG.act}" data-id="${o.id}">
+            <h3>${esc(o.name)}</h3><div class="small">${esc(o.desc)}</div></div>`).join('')}</div>`;
+    } else if (pend.kind === 'subclass') {
       const scl = R.classDef(pend.classId || p.classId);
       body = `<h2>选择${scl.name}的子职（${pend.level} 级）</h2><div class="small dim">这是本局最重要的一次选择。</div>
         <div class="cards" style="margin-top:10px">${scl.subclasses.map((s) => `
@@ -643,7 +833,7 @@
     }
     const q = R.pendingChoices(p);
     return header + `<div class="panel">${body}</div>
-      <div class="small dim center">待处理：${q.map((x) => ({ subclass: '子职', asi: '属性/专长', style: '战斗风格', expertise: '专精', spells: '法术', cantrips: '戏法' }[x.kind] + `(${x.level})`)).join('　')}</div>`;
+      <div class="small dim center">待处理：${q.map((x) => ({ subclass: '子职', asi: '属性/专长', style: '战斗风格', expertise: '专精', spells: '法术', cantrips: '戏法', classlevel: '职业进阶', invocation: '魔能祈愿', metamagic: '超魔', pactBoon: '魔契恩泽' }[x.kind] + `(${x.level})`)).join('　')}</div>`;
   }
 
   /* ================= 结算 ================= */
@@ -967,6 +1157,7 @@
     else if (s === 'event') html = eventScreen();
     else if (s === 'shop') html = shopScreen();
     else if (s === 'rest') html = restScreen();
+    else if (s === 'prepare') html = prepareScreen();
     else if (s === 'treasure') html = treasureScreen();
     else if (s === 'levelup') html = levelUpScreen();
     else if (s === 'over') html = overScreen();
@@ -1045,6 +1236,11 @@
     const pack = packs[c.pack] || packs[0];
     const equipment = NK.Items.packToItems(pack);
     const inventory = [NK.Items.consumableById('potion_healing_lesser'), NK.Items.consumableById('potion_healing_lesser')].filter(Boolean);
+    // 职业专属的起始消耗品（卷轴 / 药剂）
+    for (const cid of (pack.consumables || [])) {
+      const c = NK.Items.consumableById(cid);
+      if (c) inventory.push(c);
+    }
     // 兼职：把主职 + 副职拼成 classes 数组交给规则层
     const classes = [{ id: c.classId, level: 1, subclassId: c.subclassId || null }].concat((c.mc || []).map((e) => ({ id: e.id, level: e.level, subclassId: null })));
     const run = NK.Run.start({
@@ -1052,13 +1248,19 @@
       attrs: c.attrs, bonusChoice: c.bonusChoice, skills: c.skills, cantrips: c.cantrips, spells: c.spells,
       pack: c.pack, difficulty: c.difficulty, name: c.name || '无名者', equipment,
       classes,
-      knownSpells: cls.spellcasting && !cls.spellcasting.prepared ? c.spells.slice() : [],
-      prepared: cls.spellcasting && cls.spellcasting.prepared ? c.spells.slice() : [],
+      knownSpells: cls.spellcasting && !cls.spellcasting.prepared ? c.spells.slice() : (cls.spellcasting && cls.spellcasting.spellbook ? c.spells.slice() : []),
+      prepared: cls.spellcasting && cls.spellcasting.prepared && !cls.spellcasting.spellbook ? c.spells.slice() : [],
     });
+    // 法师：法术书里的法术按「已准备」上限先占好位（长休可重选）
+    if (cls.spellcasting && cls.spellcasting.spellbook && cls.spellcasting.prepared) {
+      const cap = R.spellCapacity(run.player).prepared;
+      run.player.prepared = run.player.knownSpells.slice(0, cap);
+    }
     run.player.inventory = inventory;
     App.run = run;
     App.asiDraft = null;
     App.selAction = 0;
+    App.lastActionKey = null;
     writeJSON(LAST_KEY, captureBuild(c));   // 记住这次用的配置，重开时不用再捏
     busyScreen();
     render();
@@ -1072,7 +1274,10 @@
   }
 
   const actions = {
-    't:new': () => { App.create = newCreate(); App.screen = 'create'; render(); },
+    't:new': () => { startCreate(null); render(); },
+    /** 一键把上一套配置灌回来（建卡第 1 页的横幅按钮） */
+    'c:autofill': () => { startCreate(lastBuild()); render(); },
+    'c:reset': () => { App.create = newCreate(); App.createRestored = false; toast('已清空，从头捏一个。'); render(); },
     't:continue': () => {
       const saved = NK.RunStore.load();
       if (!saved) { toast('没有找到未完成的一局。'); return; }
@@ -1104,23 +1309,10 @@
       const c = App.create;
       c.classId = d.id; c.subclassId = null; c.skills = []; c.cantrips = []; c.spells = []; c.mc = [];
       const cls = R.classDef(d.id);
-      c.step = stepsFor(c).indexOf(cls.subclassLevel === 1 ? 'subclass' : 'bg');
+      c.step = stepsFor(c).indexOf(cls.subclassLevel === 1 ? 'subclass' : 'attrs');
       if (c.step < 0) c.step = 2;
       render();
     },
-    'c:mc:lv': (d) => {
-      const c = App.create;
-      const id = d.id; const dlt = parseInt(d.d, 10);
-      c.mc = c.mc || [];
-      const e = c.mc.find((x) => x.id === id);
-      const total = 1 + c.mc.reduce((a, x) => a + x.level, 0);
-      if (dlt > 0) {
-        if (total >= 10) { toast('总等级不能超过 10。'); return; }
-        if (e) e.level += 1; else c.mc.push({ id, level: 1 });
-      } else if (e) { e.level -= 1; if (e.level <= 0) c.mc = c.mc.filter((x) => x.id !== id); }
-      render();
-    },
-    'c:mc:rm': (d) => { const c = App.create; c.mc = (c.mc || []).filter((x) => x.id !== d.id); render(); },
     'c:subclass': (d) => { App.create.subclassId = d.id; App.create.step += 1; render(); },
     'c:bg': (d) => { App.create.bgId = d.id; App.create.step += 1; render(); },
     'c:attr:add': (d) => {
@@ -1155,8 +1347,7 @@
     },
     'c:cantrip': (d) => {
       const c = App.create;
-      const cls = R.classDef(c.classId);
-      const max = cls.spellcasting.cantrips || 0;
+      const max = spellNeeds(c).cantrips;
       const i = c.cantrips.indexOf(d.id);
       if (i >= 0) c.cantrips.splice(i, 1);
       else if (c.cantrips.length < max) c.cantrips.push(d.id);
@@ -1164,11 +1355,7 @@
     },
     'c:spell': (d) => {
       const c = App.create;
-      const cls = R.classDef(c.classId);
-      const sc = cls.spellcasting;
-      const mod = R.mod(previewAttrs(c)[sc.ability]);
-      const max = sc.spellbook ? Math.min(sc.spellsAtLevel1 || 6, NK.Data.get('spells').spells.filter((s) => NK.Rules.spellListOf(cls.id).some((c) => s.classes.includes(c)) && s.level === 1).length)
-        : sc.prepared ? Math.max(1, mod + 1) : (sc.knownByLevel ? sc.knownByLevel[0] : 0);
+      const max = spellNeeds(c).spells;
       const i = c.spells.indexOf(d.id);
       if (i >= 0) c.spells.splice(i, 1);
       else if (c.spells.length < max) c.spells.push(d.id);
@@ -1199,13 +1386,12 @@
     't:quickstart': (d) => {
       const b = loadBuilds().find((x) => x.id === d.id);
       if (!b) { toast('找不到这套配置。'); return; }
-      beginRun(applyBuild(newCreate(), b));
+      beginRun(sanitizeBuild(applyBuild(newCreate(), b)));
     },
     't:editbuild': (d) => {
       const b = loadBuilds().find((x) => x.id === d.id);
       if (!b) { toast('找不到这套配置。'); return; }
-      App.create = applyBuild(newCreate(), b);
-      App.screen = 'create';
+      startCreate(b);
       render();
       toast('已载入配置，可以直接开始或继续调整。');
     },
@@ -1229,7 +1415,7 @@
     't:last': () => {
       const b = lastBuild();
       if (!b) { toast('没有记录。'); return; }
-      beginRun(applyBuild(newCreate(), b));
+      beginRun(sanitizeBuild(applyBuild(newCreate(), b)));
     },
     'open:records': () => { App.modal = 'records'; render(); },
     'open:codex': () => { App.modal = 'codex'; App.codexTab = App.codexTab || 'monsters'; render(); },
@@ -1247,7 +1433,7 @@
     },
 
     /* 战斗 */
-    'b:attack': () => { NK.Combat.playerAction(App.run._combat, { type: 'attack', target: App.targetUid }); render(); },
+    'b:attack': () => { App.lastActionKey = 'attack'; NK.Combat.playerAction(App.run._combat, { type: 'attack', target: App.targetUid }); render(); },
     'b:do': () => {
       const run = App.run;
       const c = run._combat;
@@ -1263,6 +1449,7 @@
       if (o.kind === 'spell') NK.Combat.playerAction(c, { type: 'cast', spellId: o.id, slot: o.slot, target: App.targetUid });
       else if (o.kind === 'bonus') NK.Combat.playerAction(c, { type: 'bonus', id: o.id, target: App.targetUid });
       else NK.Combat.playerAction(c, { type: 'item', index: o.index, target: App.targetUid });
+      App.lastActionKey = actionKey(o);   // 记住这一手，下一回合自动选中同一个
       App.selAction = 0;
       render();
     },
@@ -1272,7 +1459,7 @@
     'b:end': () => { NK.Combat.playerAction(App.run._combat, { type: 'endTurn' }); render(); },
     'b:pass': () => { NK.Combat.playerAction(App.run._combat, { type: 'endTurn' }); render(); },
     'b:bonus': (d) => { NK.Combat.playerAction(App.run._combat, { type: 'bonus', id: d.id, target: App.targetUid }); render(); },
-    'b:cast': (d) => { NK.Combat.playerAction(App.run._combat, { type: 'cast', spellId: d.id, slot: parseInt(d.slot, 10), target: App.targetUid }); render(); },
+    'b:cast': (d) => { App.lastActionKey = `spell:${d.id}:${parseInt(d.slot, 10)}`; NK.Combat.playerAction(App.run._combat, { type: 'cast', spellId: d.id, slot: parseInt(d.slot, 10), target: App.targetUid }); render(); },
     'b:item': (d) => { NK.Combat.playerAction(App.run._combat, { type: 'item', index: parseInt(d.index, 10), target: App.targetUid }); render(); },
     'target': (d) => { App.targetUid = d.uid; render(); },
     'b:continue': () => {
@@ -1337,12 +1524,48 @@
 
     /* 休整 */
     'rest:short': (d) => {
-      const r = NK.Run.restShort(App.run, parseInt(d.n || '1', 10));
+      const n = parseInt(d.n || '1', 10);
+      App.lastRestDice = n;   // 记住上次投了几颗，下次营地默认还是这个数
+      const r = NK.Run.restShort(App.run, n);
       toast(r.msg); render();
     },
     'rest:long': () => {
       const r = NK.Run.restLong(App.run);
-      toast(r.msg); render();
+      toast(r.msg);
+      if (r.ok && App.run.needReprepare) { App.prepSel = (App.run.player.prepared || []).slice(); App.screen = 'prepare'; }
+      render();
+    },
+    'p:toggle': (d) => {
+      const sel = App.prepSel || (App.prepSel = []);
+      const i = sel.indexOf(d.id);
+      if (i >= 0) sel.splice(i, 1); else sel.push(d.id);
+      render();
+    },
+    'p:done': () => {
+      const run = App.run;
+      if (!run) return;
+      const res = R.resetPrepared(run.player, App.prepSel || []);
+      toast(res.msg);
+      App.prepSel = null;
+      run.needReprepare = false;
+      const node = NK.Run.node(run);
+      if (node) node.done = true;
+      run.state = 'map';
+      NK.Run.save(run);
+      App.screen = 'map';
+      busyScreen(); render();
+    },
+    'p:keep': () => {
+      const run = App.run;
+      if (!run) return;
+      App.prepSel = null;
+      run.needReprepare = false;
+      const node = NK.Run.node(run);
+      if (node) node.done = true;
+      run.state = 'map';
+      NK.Run.save(run);
+      App.screen = 'map';
+      busyScreen(); render();
     },
     'rest:none': () => {
       const run = App.run;
@@ -1363,7 +1586,11 @@
     },
 
     /* 升级 */
+    'l:classlevel': (d) => { const r = NK.Run.resolveChoice(App.run, { classId: d.id }); toast(r.msg); render(); },
     'l:subclass': (d) => { const r = NK.Run.resolveChoice(App.run, { subclass: d.id }); toast(r.msg); App.asiDraft = null; render(); },
+    'l:invocation': (d) => { const r = NK.Run.resolveChoice(App.run, { id: d.id }); toast(r.msg); App.asiDraft = null; render(); },
+    'l:metamagic': (d) => { const r = NK.Run.resolveChoice(App.run, { id: d.id }); toast(r.msg); App.asiDraft = null; render(); },
+    'l:pactboon': (d) => { const r = NK.Run.resolveChoice(App.run, { id: d.id }); toast(r.msg); App.asiDraft = null; render(); },
     'l:feat': (d) => { const r = NK.Run.resolveChoice(App.run, { feat: d.id }); toast(r.msg); App.asiDraft = null; render(); },
     'l:style': (d) => { const r = NK.Run.resolveChoice(App.run, { style: d.id }); toast(r.msg); render(); },
     'l:expertise': (d) => { const r = NK.Run.resolveChoice(App.run, { skill: d.id }); toast(r.msg); render(); },
@@ -1416,7 +1643,7 @@
     use: (d) => { const r = NK.Run.useConsumable(App.run, parseInt(d.index, 10)); toast(r.msg); render(); },
     copy: (d) => { const r = NK.Run.copyScroll(App.run, parseInt(d.index, 10)); toast(r.msg); render(); },
     'save:quit': () => { NK.RunStore.save(App.run); App.run = null; App.screen = 'title'; toast('已保存。'); render(); },
-    'o:again': () => { App.run = null; App.overSummary = null; App.create = newCreate(); App.screen = 'create'; render(); },
+    'o:again': () => { App.run = null; App.overSummary = null; startCreate(lastBuild()); render(); },
   };
 
   function onClick(e) {

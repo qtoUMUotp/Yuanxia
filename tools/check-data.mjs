@@ -96,7 +96,7 @@ for (const c of items.consumables) {
 
 /* ---------- 4. 法术 ---------- */
 for (const s of spells.spells) {
-  if (typeof s.level !== 'number' || s.level < 0 || s.level > 5) err(`法术 ${s.id}: 环阶非法 -> ${s.level}`);
+  if (typeof s.level !== 'number' || s.level < 0 || s.level > 9) err(`法术 ${s.id}: 环阶非法 -> ${s.level}`);
   if (!Array.isArray(s.classes) || !s.classes.length) err(`法术 ${s.id}: 缺少 classes`);
   for (const c of s.classes || []) if (!CLASS_IDS.has(c)) err(`法术 ${s.id}: 职业不存在 -> ${c}`);
   if (s.save && !ATTRS.includes(s.save)) err(`法术 ${s.id}: 豁免属性非法 -> ${s.save}`);
@@ -182,8 +182,8 @@ for (const c of classes.classes) {
   if (!Array.isArray(c.skillChoices && c.skillChoices.from)) err(`职业 ${c.id}: 缺少技能选择池`);
   for (const s of c.skillChoices.from) if (!SKILLS.has(s)) err(`职业 ${c.id}: 技能不存在 -> ${s}`);
   for (const f of c.features) {
-    if (typeof f.level !== 'number' || f.level < 1 || f.level > 10) err(`职业 ${c.id}/${f.name}: 等级非法 -> ${f.level}`);
-    if (f.choice && !['fightingStyle', 'expertise'].includes(f.choice)) err(`职业 ${c.id}/${f.name}: choice 非法 -> ${f.choice}`);
+    if (typeof f.level !== 'number' || f.level < 1 || f.level > 20) err(`职业 ${c.id}/${f.name}: 等级非法 -> ${f.level}`);
+    if (f.choice && !['fightingStyle', 'expertise', 'invocation', 'metamagic', 'pactBoon'].includes(f.choice)) err(`职业 ${c.id}/${f.name}: choice 非法 -> ${f.choice}`);
   }
   if (!(c.subclasses || []).length) err(`职业 ${c.id}: 没有子职`);
   if (typeof c.subclassLevel !== 'number') err(`职业 ${c.id}: 缺少 subclassLevel`);

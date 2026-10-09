@@ -76,6 +76,10 @@ while (App.run && !App.run.ended && guard++ < 1500) {
     else if (pend.kind === 'style') UI.act('l:style', { id: NK.Data.get('rules').fightingStyles[0].id });
     else if (pend.kind === 'expertise') UI.act('l:expertise', { id: p.proficiencies.skills[0] });
     else if (pend.kind === 'asi') { UI.act('l:attr:add', { k: R.classDef(p.classId).primary }); UI.act('l:attr:add', { k: R.classDef(p.classId).primary }); UI.act('l:asi'); }
+    else if (pend.kind === 'classlevel') UI.act('l:classlevel', { id: p.lastLeveledClassId });
+    else if (pend.kind === 'invocation') UI.act('l:invocation', { id: NK.Data.get('rules').invocations[0].id });
+    else if (pend.kind === 'metamagic') UI.act('l:metamagic', { id: NK.Data.get('rules').metamagics[0].id });
+    else if (pend.kind === 'pactBoon') UI.act('l:pactboon', { id: NK.Data.get('rules').pactBoons[0].id });
     else { const cls = R.classDef(p.classId); const known = pend.kind === 'cantrips' ? p.cantrips : (cls.spellcasting.prepared ? p.prepared : p.knownSpells); const maxLv = R.maxSpellLevel(p) || 1; const pool = NK.Data.get('spells').spells.filter((x) => x.classes.includes(p.classId) && (pend.kind === 'cantrips' ? x.level === 0 : (x.level >= 1 && x.level <= maxLv)) && !known.includes(x.id)); UI.act('l:spell', { id: pool[0].id }); }
   } else if (s === 'event') { if (App.run.eventResult) { act = 'ev:next'; tr(`#${guard} ev:next`); UI.act('ev:next'); } else { const i = App.run.event.options.findIndex((o) => NK.Events.checkRequire(App.run, o).ok); tr(`#${guard} ev:opt ${i}`); UI.act('ev:opt', { index: String(i < 0 ? 0 : i) }); } }
   else if (s === 'shop') { const buy = App.run.shop.items.concat(App.run.shop.consumables).find((x) => !x.sold && App.run.gold >= x.price); if (buy) { tr(`#${guard} buy ${buy.id}`); UI.act('buy', { id: buy.id }); } tr(`#${guard} shop:leave`); UI.act('shop:leave'); }

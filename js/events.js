@@ -123,7 +123,7 @@
       }
       if (effect.slot_restore) {
         let left = effect.slot_restore;
-        for (let i = 0; i < 5 && left > 0; i++) {
+        for (let i = 0; i < (NK.Rules.MAX_SLOT || 9) && left > 0; i++) {
           if (p.slots[i] < p.slotsMax[i]) { p.slots[i] += 1; left -= 1; }
         }
         lines.push('法术位得到了恢复。');

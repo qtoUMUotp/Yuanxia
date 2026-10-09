@@ -242,11 +242,72 @@
           { name: '苦修', desc: '短棒 + 皮甲 + 盾牌。轻装，靠法术位输出。', weapons: ['club'], armor: 'leather_armor', shield: 'shield' },
         ],
         wizard: [
-          { name: '法杖', desc: '短棒 + 法袍（不穿甲）。法师护甲让你在没有铠甲的情况下也有 AC 17。', weapons: ['club'], armor: null, shield: null },
-          { name: '匕首', desc: '匕首 + 法袍。近身时至少有一件能用的东西。', weapons: ['dagger'], armor: null, shield: null },
+          { name: '法杖', desc: '短棒（当法器握着）+ 法袍。法师护甲让你在不穿甲时也有可观 AC——穿着不熟练的护甲会让你根本无法施法。', weapons: ['club'], armor: null, shield: null, consumables: ['scroll_shield'] },
+          { name: '匕首', desc: '匕首 + 法袍。近身时至少有一件能用的东西，也能投出去。', weapons: ['dagger'], armor: null, shield: null, consumables: ['scroll_shield'] },
+        ],
+        sorcerer: [
+          { name: '血脉之刃', desc: '匕首 + 法袍。术士没有任何护甲熟练，靠魔法和走位活着；灵巧匕首是唯一的近身保险。', weapons: ['dagger'], armor: null, shield: null, consumables: ['scroll_burning_hands'] },
+          { name: '远裔', desc: '短弓 + 法袍。远远地射，把法术位与术法点留给真正需要的时候。', weapons: ['shortbow'], armor: null, shield: null, consumables: ['scroll_burning_hands'] },
+        ],
+        warlock: [
+          { name: '影契', desc: '匕首 + 皮甲。邪术师只有轻甲熟练——魔能爆才是你的武器，皮甲已经是你该穿的上限。', weapons: ['dagger'], armor: 'leather_armor', shield: null, consumables: ['scroll_mirror_image'] },
+          { name: '远契', desc: '短弓 + 皮甲。拉开距离，让魔能爆一束一束地打出去。', weapons: ['shortbow'], armor: 'leather_armor', shield: null, consumables: ['scroll_mirror_image'] },
+        ],
+        bard: [
+          { name: '游吟', desc: '短弓 + 皮甲。站在后面输出，把动作留给法术与吟游灵感。', weapons: ['shortbow'], armor: 'leather_armor', shield: null, consumables: ['potion_healing_lesser'] },
+          { name: '剑伶', desc: '匕首 + 镶钉皮甲。灵巧近身，AC 高一档，适合贴着前排唱。', weapons: ['dagger'], armor: 'studded_leather', shield: null, consumables: ['potion_healing_lesser'] },
+        ],
+        druid: [
+          { name: '守望', desc: '长矛 + 盾牌 + 皮甲。德鲁伊不穿金属甲，皮甲配盾已经很稳。', weapons: ['spear'], armor: 'leather_armor', shield: 'shield', consumables: ['antidote'] },
+          { name: '荒野', desc: '短棒 + 盾牌 + 镶钉皮甲。轻装，把动作与法术位留给野性形态。', weapons: ['club'], armor: 'studded_leather', shield: 'shield', consumables: ['antidote'] },
+        ],
+        artificer: [
+          { name: '工匠', desc: '手斧 + 轻锤 + 皮甲。两把都能投，近远都不吃亏；第二把进左手。', weapons: ['handaxe', 'light_hammer'], armor: 'leather_armor', shield: null, consumables: ['caltrop_pouch'] },
+          { name: '机械', desc: '短弓 + 镶钉皮甲。躲在后面，让奥术冲量与法术去干活。', weapons: ['shortbow'], armor: 'studded_leather', shield: null, consumables: ['caltrop_pouch'] },
+        ],
+        barbarian: [
+          { name: '狂战', desc: '巨剑（双手 2d6）+ 皮甲。野蛮人只有轻甲熟练，但狂暴的减伤替你扛下剩下的。', weapons: ['greatsword'], armor: 'leather_armor', shield: null, consumables: ['potion_rage'] },
+          { name: '双斧', desc: '手斧 ×2 + 皮甲。轻型可投掷，第二把进左手，每回合能用附赠动作多打一次。', weapons: ['handaxe', 'handaxe'], armor: 'leather_armor', shield: null, consumables: ['potion_rage'] },
+        ],
+        monk: [
+          { name: '空行', desc: '不持武器。武僧不穿甲也不用武器——徒手打击就是武器，AC 靠敏捷与感知。', weapons: [], armor: null, shield: null, consumables: ['potion_jump'] },
+          { name: '行脚', desc: '长矛 + 无甲。双手持用 1d8，比徒手更重，但会占用你的手。', weapons: ['spear'], armor: null, shield: null, consumables: ['potion_jump'] },
         ],
       };
-      return P[classId] || P.warrior;
+      const cls = NK.Rules.classDef(classId);
+      const packs = P[classId] || Items.defaultPacks(cls) || P.warrior;
+      return packs.map((k) => Items.sanitizePack(k, cls));
+    },
+
+    /** 没写死装备包的职业：按护甲/武器熟练推导，避免「法术职业发把巨剑」 */
+    defaultPacks(cls) {
+      if (!cls) return null;
+      const ap = cls.armorProfs || [];
+      const armor = ap.includes('heavy') ? 'chain_mail' : ap.includes('medium') ? 'scale_mail' : ap.includes('light') ? 'leather_armor' : null;
+      const shield = ap.includes('shield');
+      const martial = (cls.weaponProfs || []).includes('martial');
+      const melee = armor ? (martial ? 'longsword' : 'spear') : 'dagger';
+      return [
+        { name: '近战', desc: '近战武器 + 你能穿的护甲。', weapons: [melee], armor, shield: shield ? 'shield' : null },
+        { name: '远程', desc: '短弓 + 匕首。安全优先，怕被贴脸。', weapons: ['shortbow', 'dagger'], armor, shield: null },
+      ];
+    },
+
+    /** 熟练校验：把装备包里职业用不了的东西换掉（护甲不熟练会导致无法施法与检定劣势） */
+    sanitizePack(pack, cls) {
+      const out = Object.assign({}, pack);
+      if (!cls) return out;
+      const ap = cls.armorProfs || [];
+      if (out.armor) {
+        const a = Items.armors().find((x) => x.id === out.armor);
+        if (a && !ap.includes(a.category)) {
+          const fallback = ['heavy', 'medium', 'light'].find((k) => ap.includes(k));
+          out.armor = { heavy: 'chain_mail', medium: 'scale_mail', light: 'leather_armor' }[fallback] || null;
+          out.desc += '（原配护甲超出你的熟练，已换成你能穿的）';
+        }
+      }
+      if (out.shield && !ap.includes('shield')) { out.shield = null; out.desc += '（你不熟练盾牌，已去掉）'; }
+      return out;
     },
 
     /** 把装备包变成实际物品；第二件单手武器会进左手（可以副手攻击） */

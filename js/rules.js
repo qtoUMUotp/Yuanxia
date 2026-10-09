@@ -10,7 +10,10 @@
     'rangedHit', 'rangedDmg', 'oneHandDmg', 'offhandDmg', 'critExtraDice', 'elemDmg', 'healBonus', 'healBonusPerLevel',
     'undeadSlayer', 'favoredEnemy', 'superiority', 'superiorityDie', 'luckPoints', 'restShort', 'restLong',
     'startGold', 'shopDiscount', 'restHealBonus', 'battleStartTempHp', 'divineStrike', 'poisonDice', 'giantKiller',
-    'ringSlots', 'interference', 'steadyAim', 'rageDr', 'rageDmg', 'monkDmg'];
+    'ringSlots', 'interference', 'steadyAim', 'rageDr', 'rageDmg', 'monkDmg',
+    // 5e 20 级补完：资源次数 / 骰子尺寸 / 属性上限
+    'brutalCrit', 'bardDie', 'channelUses', 'actionSurgeUses', 'indomitableUses', 'rageMax', 'attrCap',
+    'attrStr', 'attrDex', 'attrCon', 'attrInt', 'attrWis', 'attrCha', 'destroyUndead', 'wildShapeCR'];
 
   const FLAG = ['resist', 'immune', 'vuln', 'skillProfs', 'expertiseSkills', 'secondWind', 'actionSurge', 'indomitable',
     'cunningAction', 'uncannyDodge', 'evasion', 'divineSmite', 'channelDivinity', 'channelHeal', 'channelBurst',
@@ -19,11 +22,26 @@
     'vowOfEnmity', 'relentlessAvenger', 'divineIntervention', 'wardingFlare', 'arcaneWard', 'extraSpellPerLevel',
     'cleaveOnKill', 'noSurprise', 'extraSkill', 'defensiveTactics', 'dreadAmbusher', 'undeadSlayer',
     'fearImmune', 'charmImmune', 'acSet', 'acWis', 'flight', 'disadvantageAgainst', 'mirror', 'nextAttackAdvantage',
-    'rage', 'ki', 'flurry', 'stun'];
+    'rage', 'ki', 'flurry', 'stun',
+    // 邪术师：魔能祈愿
+    'ebAgonizing', 'ebRepelling', 'ebGrasping', 'ebLance',
+    // 奥术工匠：奥术附魔 / 奥术冲量
+    'magicalStrikes', 'arcaneJolt',
+    // 其它职业核心开关
+    'metamagic', 'bardicInspiration', 'songOfRest', 'wildShape', 'pactTome', 'pactChain', 'pactBlade',
+    // 5e 20 级补完：核心机制开关
+    'unarmoredCon', 'reckless', 'wildShapeShortRest', 'fontOfInspiration', 'improvedSmite', 'reliableTalent',
+    'blindsense', 'saveProfExtra', 'diamondSoul', 'elusive', 'strokeOfLuck', 'persistentRage', 'relentlessRage',
+    'primalChampion', 'perfectSelf', 'archdruid', 'sorcerousRestoration', 'spellMastery', 'signatureSpell',
+    'magicalSecrets', 'arcaneRecoveryLong', 'divineInterventionImproved', 'cleansingTouch', 'farShot',
+    'poisonImmune', 'beastSpells', 'timelessBody', 'emptyBody', 'eldritchMaster', 'sacredOath', 'shadowMaster',
+    'spellStoringItem', 'superiorInspiration', 'auraRange'];
 
   const Rules = {
     NUM,
     FLAG,
+    LEVEL_CAP: 20,          // 5e 等级上限
+    MAX_SLOT: 9,            // 最高法术环阶（九环）
     EQUIP_SLOTS: ['mainHand', 'offHand', 'body', 'legs', 'helm', 'neck', 'bracers', 'greaves', 'boots'],
     RING_CAP: 20,
     mod(score) { return Math.floor(((score || 10) - 10) / 2); },
@@ -42,6 +60,9 @@
     bgDef(id) { return NK.Data.get('backgrounds').backgrounds.find((b) => b.id === id); },
     spellDef(id) { return NK.Data.get('spells').spells.find((s) => s.id === id); },
     featDef(id) { return NK.Data.get('rules').feats.find((f) => f.id === id); },
+    invocationDef(id) { return (NK.Data.get('rules').invocations || []).find((x) => x.id === id); },
+    metamagicDef(id) { return (NK.Data.get('rules').metamagics || []).find((x) => x.id === id); },
+    pactBoonDef(id) { return (NK.Data.get('rules').pactBoons || []).find((x) => x.id === id); },
     styleDef(id) { return NK.Data.get('rules').fightingStyles.find((f) => f.id === id); },
     skillDef(id) { return NK.Data.get('rules').skills.find((s) => s.id === id); },
     skills() { return NK.Data.get('rules').skills; },
@@ -108,24 +129,72 @@
       }
       return NK.Data.get('spells').spells.filter((s) => ids.has(s.id));
     },
-    /** 取所有施法职业中的最高可施放环阶（契约魔法以 pact 环阶计） */
+    /** 这个法术属于哪个职业（决定它吃常规法术位还是契约位）。
+     *  5e：兼职邪术师时，只有邪术师的法术能用契约位；法师/牧师的法术照走常规法术位。
+     *  归属判断：取「能学到它的施法职业」里第一个非契约职业；只有邪术师能学时才归邪术师。 */
+    spellOwnerOf(p, spellId) {
+      const sp = Rules.spellDef(spellId);
+      if (!sp) return null;
+      const cs = Rules.castingEntries(p);
+      if (!cs.length) return null;
+      const cand = cs.filter((e) => (sp.classes || []).some((c) => Rules.spellListOf(e.id).includes(c)));
+      if (!cand.length) return cs[0].id;
+      const nonPact = cand.filter((e) => { const sc = (Rules.classDef(e.id) || {}).spellcasting; return !sc || sc.type !== 'pact'; });
+      return (nonPact[0] || cand[0]).id;
+    },
+    /** 这个法术是不是「契约法术」（走邪术师的契约位而不是常规法术位） */
+    isPactSpell(p, spellId) {
+      const owner = Rules.spellOwnerOf(p, spellId);
+      if (!owner) return false;
+      const sc = (Rules.classDef(owner) || {}).spellcasting;
+      return !!(sc && sc.type === 'pact');
+    },
+    /** 取所有施法职业中的最高可施放环阶：常规法术位、契约位、玄奥秘术三者取最大（5e） */
     maxSpellLevel(p) {
-      if ((p.pactLevel || 0) > 0) return p.pactLevel;
-      const row = Rules.slotsMax(p);
       let max = 0;
+      const row = Rules.slotsMax(p);
       row.forEach((n, i) => { if (n > 0) max = i + 1; });
+      if ((p.pactLevel || 0) > max) max = p.pactLevel;
       return max;
     },
-    /** 法术位：取每个施法职业在该职业等级下的法术位，逐环取较高值（契约魔法不计入常规法术位） */
-    slotsMax(p) {
+    /** 兼职「合并施法等级」：全施法 1 级/级，半施法（游侠/圣武士）每 2 级 1 级，工匠向上取整 */
+    casterLevel(p) {
       const cs = Rules.castingEntries(p).filter((e) => { const sc = Rules.classDef(e.id).spellcasting; return sc && sc.type !== 'pact'; });
-      if (!cs.length) return [0, 0, 0, 0, 0];
-      const out = [0, 0, 0, 0, 0];
+      let lv = 0;
       for (const e of cs) {
         const sc = Rules.classDef(e.id).spellcasting;
+        if (sc.type === 'full') lv += e.level;
+        else if (sc.halfUp) lv += Math.ceil(e.level / 2);
+        else lv += Math.floor(e.level / 2);
+      }
+      return U.clamp(lv, 0, Rules.LEVEL_CAP);
+    },
+    /** 法术位（1-9 环）。多职业按 5e 的「合并施法等级」表取；玄奥秘术（六~九环各 1 个）并入常规法术位。 */
+    slotsMax(p) {
+      const cs = Rules.castingEntries(p).filter((e) => { const sc = Rules.classDef(e.id).spellcasting; return sc && sc.type !== 'pact'; });
+      const out = new Array(Rules.MAX_SLOT).fill(0);
+      // 玄奥秘术（邪术师 11/13/15/17 级）：六~九环各多一个「每日一次」的法术位（长休恢复）
+      const wl = Rules.classEntries(p).find((e) => { const c = Rules.classDef(e.id); return c && c.spellcasting && c.spellcasting.type === 'pact'; });
+      if (wl) {
+        for (const a of (NK.Data.get('rules').mysticArcanum || [])) {
+          if (wl.level >= a.level) out[a.slot - 1] = (out[a.slot - 1] || 0) + 1;
+        }
+      }
+      if (!cs.length) return out;
+      if (cs.length === 1) {
+        // 单职业：直接查本职表（全施法用等级，半施法用职业等级）
+        const e = cs[0];
+        const sc = Rules.classDef(e.id).spellcasting;
         const table = sc.type === 'full' ? NK.Data.get('rules').fullCasterSlots : NK.Data.get('rules').halfCasterSlots;
-        const row = table[String(e.level)] || [0, 0, 0, 0, 0];
-        for (let i = 0; i < 5; i++) out[i] = Math.max(out[i], row[i]);
+        const key = String(U.clamp(sc.halfUp ? Math.min(Rules.LEVEL_CAP, e.level + 1) : e.level, 1, Rules.LEVEL_CAP));
+        const row = table[key] || [];
+        for (let i = 0; i < Rules.MAX_SLOT; i++) out[i] = row[i] || 0;
+      } else {
+        const cl = Rules.casterLevel(p);
+        if (cl > 0) {
+          const row = NK.Data.get('rules').fullCasterSlots[String(cl)] || [];
+          for (let i = 0; i < Rules.MAX_SLOT; i++) out[i] = row[i] || 0;
+        }
       }
       return out;
     },
@@ -133,8 +202,8 @@
     pactMax(p) {
       const ent = Rules.classEntries(p).find((e) => { const c = Rules.classDef(e.id); return c && c.spellcasting && c.spellcasting.type === 'pact'; });
       if (!ent) return null;
-      const table = [null, [1, 1], [2, 1], [2, 2], [2, 2], [3, 3], [3, 3], [4, 4], [4, 4], [5, 5], [5, 5]];
-      const r = table[U.clamp(ent.level, 1, 10)];
+      const table = NK.Data.get('rules').pactSlotsByLevel;
+      const r = (table && table[U.clamp(ent.level, 1, Rules.LEVEL_CAP)]) || null;
       return r ? { level: r[1], slots: r[0] } : null;
     },
     /** 施法属性：优先主职业；主职业不施法时取第一个施法兼职的属性 */
@@ -170,6 +239,13 @@
       (p.cantrips || []).forEach((id) => ids.add(id));
       return Array.from(ids).map((id) => Rules.spellDef(id)).filter(Boolean);
     },
+    /** 某职业在 lv 级会几个戏法（5e 分段表） */
+    cantripsKnown(clsId, lv) {
+      const sc = Rules.classDef(clsId).spellcasting;
+      const table = (sc && sc.cantripsByLevel) || null;
+      if (table) return table[U.clamp(lv, 1, table.length) - 1] || 0;
+      return (sc && sc.cantrips) || 0;
+    },
     /** 法术容量：各施法职业按各自职业等级累加（已准备/已知/戏法分别求和） */
     spellCapacity(p) {
       const cs = Rules.castingEntries(p);
@@ -180,20 +256,34 @@
         const cls = Rules.classDef(e.id);
         const sc = cls.spellcasting;
         const mod = Rules.spellMod(p);
+        cantrips += Rules.cantripsKnown(e.id, e.level);
         if (sc.spellbook) {
-          cantrips += sc.cantrips || 0;
+          // 法术书：每级抄进去的法术（5e 法师 1 级 6 个，之后每级 +2）
           known += (sc.spellsAtLevel1 || 0) + (e.level - 1) * ((sc.spellsPerLevel || 2) + epl);
-        } else if (sc.prepared) {
-          cantrips += sc.cantrips || 0;
-          const half = sc.type === 'half' ? Math.floor(e.level / 2) : e.level;
-          if (!(sc.type === 'half' && e.level < 2)) prepared += Math.max(1, mod + half);
-        } else {
+        } else if (!sc.prepared) {
           const table = sc.knownByLevel || [];
-          cantrips += sc.cantrips || 0;
           known += table[U.clamp(e.level, 1, table.length) - 1] || 0;
         }
+        if (sc.prepared) {
+          // 5e：已准备 = 施法属性调整值 + 职业等级（半施法职业取等级的一半，向下取整，最低 1）
+          const half = sc.type === 'half' ? Math.floor(e.level / 2) : e.level;
+          const noSlots = sc.type === 'half' && !sc.halfUp && e.level < 2;
+          if (!noSlots) prepared += Math.max(1, mod + half);
+        }
       }
+      // 书之契约：额外的 3 个戏法
+      if (p.flags && p.flags.pactTome) cantrips += 3;
       return { cantrips, prepared, known };
+    },
+
+    /** 术法点上限：5e —— 术士 2 级起，术法点 = 术士职业等级 */
+    sorceryMax(p) {
+      let lv = 0;
+      for (const e of Rules.classEntries(p)) {
+        const cls = Rules.classDef(e.id);
+        if (cls && (cls.features || []).some((f) => f.choice === 'metamagic')) lv += e.level;
+      }
+      return lv >= 2 ? lv : 0;
     },
 
     /* ---------- 修正值聚合 ---------- */
@@ -233,6 +323,11 @@
       }
       for (const fid of p.feats || []) { const ft = Rules.featDef(fid); if (ft) add('专长·' + ft.name, ft.effects); }
       for (const sid of p.styles || []) { const st = Rules.styleDef(sid); if (st) add('战斗风格·' + st.name, st.effects); }
+      // 职业专属选项：魔能祈愿 / 超魔 / 魔契恩泽（选了才生效）
+      for (const id of p.invocations || []) { const o = Rules.invocationDef(id); if (o) add('魔能祈愿·' + o.name, o.effects); }
+      for (const id of p.metamagics || []) { const o = Rules.metamagicDef(id); if (o) add('超魔·' + o.name, o.effects || {}); }
+      const boon = p.pactBoon ? Rules.pactBoonDef(p.pactBoon) : null;
+      if (boon) add('魔契·' + boon.name, boon.effects);
       // 装备（10 个槽位 + 戒指数组）
       const equip = (label, it) => {
         const m = Object.assign({}, it.bonus || {}, it.mods || {});
@@ -328,6 +423,24 @@
       p.flags = agg.flags;
       p.sources = agg.sources;
 
+      // 属性：购点 + 种族 + 自选 + 特性加值（如野蛮人 20 级「原始勇士」力量/体质 +4）
+      // 以 baseAttrs 为基准重算，避免反复 recalc 时叠加；封顶 20（原始勇士提到 24）
+      if (p.baseAttrs) {
+        const race = Rules.raceDef(p.raceId);
+        const cap = 20 + (p.mods.attrCap || 0);
+        for (const k of ['str', 'dex', 'con', 'int', 'wis', 'cha']) {
+          const extra = p.mods['attr' + k.charAt(0).toUpperCase() + k.slice(1)] || 0;
+          const v = (p.baseAttrs[k] || 10) + ((race && race.bonus && race.bonus[k]) || 0) + ((p.bonusChoice || {})[k] || 0) + extra;
+          p.attrs[k] = Math.min(cap, Math.max(1, v));
+        }
+      }
+      // 额外豁免熟练（游荡者 L15 滑溜心智、武僧 L14 金刚之魂）
+      if (p.flags.diamondSoul || (p.flags.saveProfExtra || []).length) {
+        for (const a of (p.flags.diamondSoul ? ['str', 'dex', 'con', 'int', 'wis', 'cha'] : p.flags.saveProfExtra)) {
+          if (a && !(p.proficiencies.saves || []).includes(a)) p.proficiencies.saves.push(a);
+        }
+      }
+
       // AC
       let ac = 10 + Rules.mod(p.attrs.dex);
       const armor = p.items.body;
@@ -338,6 +451,8 @@
         if (armor.minStr && p.attrs.str < armor.minStr) ac -= 2;   // 力量不足：AC -2
       } else if (agg.flags.acSet) {
         ac = agg.flags.acSet.base + (agg.flags.acSet.addDex ? Rules.mod(p.attrs.dex) : 0);
+      } else if (agg.flags.unarmoredCon) {
+        ac = 10 + Rules.mod(p.attrs.dex) + Rules.mod(p.attrs.con);   // 野蛮人无甲防御
       }
       const off = p.items.offHand;
       if (off && !off.dice) ac += (off.base || 2);   // 盾牌
@@ -374,37 +489,96 @@
         else p.itemAbilities.push({ id: it.daily.id, name: it.daily.name, desc: it.daily.desc, source: it.name, slot: it.slot });
       }
 
-      // 法术位
+      // 法术位（1~9 环）
       const newMax = Rules.slotsMax(p);
-      if (!p.slotsMax) { p.slotsMax = newMax; p.slots = newMax.slice(); }
-      else {
-        for (let i = 0; i < 5; i++) {
+      if (!p.slotsMax || !p.slots || p.slotsMax.length !== Rules.MAX_SLOT || p.slots.length !== Rules.MAX_SLOT) {
+        p.slotsMax = newMax.slice();
+        p.slots = newMax.slice();
+      } else {
+        for (let i = 0; i < Rules.MAX_SLOT; i++) {
           const diff = newMax[i] - p.slotsMax[i];
           if (diff > 0) p.slots[i] = (p.slots[i] || 0) + diff;
           p.slots[i] = Math.min(p.slots[i] || 0, newMax[i]);
         }
-        p.slotsMax = newMax;
+        p.slotsMax = newMax.slice();
       }
 
       // 契约魔法（邪术师）：所有契约法术皆以同一最高环阶施放，短休恢复
       const pm = Rules.pactMax(p);
-      if (pm) { p.pactLevel = pm.level; p.pactSlotsMax = pm.slots; if (p.pactSlots === undefined) p.pactSlots = pm.slots; }
-      else { p.pactLevel = 0; }
+      if (pm) {
+        p.pactLevel = pm.level;
+        if (p.pactSlotsMax !== pm.slots) { p.pactSlotsMax = pm.slots; p.pactSlots = pm.slots; }
+      } else { p.pactLevel = 0; p.pactSlots = 0; p.pactSlotsMax = 0; }
 
-      // 气（武僧）
+      // 气（武僧）：5e —— 气点 = 武僧职业等级
       if (p.flags.ki) {
-        const monk = Rules.classEntries(p).find((e) => Rules.classDef(e.id).id === 'monk');
-        p.kiMax = (monk ? monk.level : 0) + Rules.mod(p.attrs.wis);
+        const monk = Rules.classEntries(p).find((e) => e.id === 'monk');
+        p.kiMax = monk ? monk.level : 0;
         if (p.kiLeft === undefined) p.kiLeft = p.kiMax;
+        p.kiLeft = Math.min(p.kiLeft, p.kiMax);
       } else { p.kiMax = 0; p.kiLeft = 0; }
 
-      // 狂暴（野蛮人）：减伤/增伤/凶蛮攻击仅在 raging 时生效
+      // 狂暴（野蛮人）：5e —— 每日次数 2 / 3(L3) / 4(L6) / 5(L12) / 6(L17)
       if (p.flags.rage) {
-        p.rageDr = p.mods.rageDr || 0;
-        p.rageDmg = p.mods.rageDmg || 0;
-        p.rageMax = 2 + (p.level >= 6 ? 1 : 0);
+        p.rageDr = 0;   // 5e 狂暴是「抗性（减半）」而不是固定减值，见上方 p.resist
+        const barb = Rules.classEntries(p).find((e) => e.id === 'barbarian');
+        const bl0 = barb ? barb.level : 0;
+        p.rageDmg = bl0 >= 17 ? 4 : bl0 >= 9 ? 3 : 2;   // 5e 狂暴增伤 +2/+3/+4
+        const bl = barb ? barb.level : 0;
+        p.rageMax = 2 + (bl >= 3 ? 1 : 0) + (bl >= 6 ? 1 : 0) + (bl >= 12 ? 1 : 0) + (bl >= 17 ? 1 : 0);
         if (p.rageLeft === undefined) p.rageLeft = p.rageMax;
       } else { p.rageDr = 0; p.rageDmg = 0; p.rageLeft = 0; }
+      // 狂暴时对钝击/穿刺/挥砍的「抗性」（5e 原版是减半，不是固定减值）
+      if (p.raging) {
+        for (const t of ['挥砍', '穿刺', '钝击']) if (!p.resist.includes(t)) p.resist.push(t);
+      }
+
+      // 圣武士：圣疗池 = 圣武士职业等级 × 5（5e，不按总等级算）
+      if (p.flags.layOnHands) {
+        const pal = Rules.classEntries(p).find((e) => e.id === 'paladin');
+        const lmax = (pal ? pal.level : p.level) * p.flags.layOnHands;
+        p.layPoolMax = lmax;
+        if (p.layPool === undefined) p.layPool = lmax;
+        p.layPool = Math.min(p.layPool, lmax);
+      }
+      // 战斗大师：卓越骰
+      if (p.flags.superiority) {
+        p.superiorityMax = p.flags.superiority;
+        if (p.superiorityLeft === undefined) p.superiorityLeft = p.flags.superiority;
+      }
+      // 每场战斗可用次数：动作如潮 / 引导神力 / 不屈（5e 是每次休息，这里按战斗重置）
+      p.actionSurgeMax = p.flags.actionSurge ? 1 + (p.mods.actionSurgeUses || 0) : 0;
+      p.channelMax = p.flags.channelDivinity ? 1 + (p.mods.channelUses || 0) : 0;
+      p.indomitableMax = p.flags.indomitable ? 1 + (p.mods.indomitableUses || 0) : 0;
+      // 吟游激励骰（5e：d6 → d8(L5) → d10(L10) → d12(L15)）
+      p.bardDie = p.mods.bardDie || 6;
+      // 偷袭骰（5e：游荡者等级的向上取整一半，1d6 → 10d6）
+      const rog = Rules.classEntries(p).find((e) => e.id === 'rogue');
+      if (rog && p.flags.sneakAttack) p.mods.sneakAttack = Math.ceil(rog.level / 2);
+
+      // 上限提高时补差额、上限不变时只在超限时收敛（升到能用的等级就该立刻能用）
+      const refill = (cur, prev, max) => {
+        if (prev === undefined || cur === undefined) return max;
+        if (max > prev) return Math.min(max, cur + (max - prev));
+        return Math.min(cur, max);
+      };
+      // 术法点（术士超魔）
+      const smax = Rules.sorceryMax(p);
+      p.sorceryLeft = refill(p.sorceryLeft, p.sorceryMaxPrev, smax);
+      p.sorceryMaxPrev = smax;
+      p.sorceryMax = smax;
+
+      // 野性形态（德鲁伊）：次数来自特性数值
+      const wmax = typeof p.flags.wildShape === 'number' ? p.flags.wildShape : (p.flags.wildShape ? 2 : 0);
+      p.wildShapeLeft = refill(p.wildShapeLeft, p.wildShapeMaxPrev, wmax);
+      p.wildShapeMaxPrev = wmax;
+      p.wildShapeMax = wmax;
+
+      // 吟游灵感（诗人）：次数 = 魅力调整值（最少 1）
+      const imax = p.flags.bardicInspiration ? Math.max(1, Rules.mod(p.attrs.cha)) : 0;
+      p.inspirationLeft = refill(p.inspirationLeft, p.inspirationMaxPrev, imax);
+      p.inspirationMaxPrev = imax;
+      p.inspirationMax = imax;
 
       p.prof = Rules.profBonus(p.level);
       p.critRange = Math.min(p.mods.critRange || 20, 20);
@@ -446,9 +620,15 @@
       return b;
     },
 
-    /** 攻击属性（灵巧/远程用敏捷，其余用力量） */
+    /** 武僧武技骰：1d4（1-4 级）→ 1d6（5-10）→ 1d8（11-16）→ 1d10（17+） */
+    monkDie(p) {
+      const m = Rules.classEntries(p).find((e) => e.id === 'monk');
+      const lv = m ? m.level : 0;
+      return lv >= 17 ? 10 : lv >= 11 ? 8 : lv >= 5 ? 6 : 4;
+    },
+    /** 攻击属性（徒手时武僧可以用敏捷；灵巧/远程用敏捷，其余用力量） */
     attackAbility(p, weapon) {
-      if (!weapon) return 'str';
+      if (!weapon) return (p.flags && p.flags.ki) ? 'dex' : 'str';
       if (weapon.kind === 'ranged') return 'dex';
       if ((weapon.properties || []).includes('finesse')) return Rules.mod(p.attrs.dex) >= Rules.mod(p.attrs.str) ? 'dex' : 'str';
       return 'str';
@@ -482,7 +662,7 @@
     /** 伤害骰：右手武器；左手空着时双手武器才吃双手骰 */
     weaponDice(p, weapon) {
       const w = (weapon === undefined) ? p.items.mainHand : weapon;
-      if (!w) return '1d2';
+      if (!w) return (p.flags && p.flags.ki) ? ('1d' + Rules.monkDie(p)) : '1d2';   // 武僧徒手走武技骰
       if (w.versatile && !p.items.offHand) return w.versatile;
       return w.dice;
     },
@@ -492,6 +672,7 @@
       const abil = Rules.attackAbility(p, w);
       // 副手攻击不加属性调整值（5e 双武器战斗），除非有「双武器战斗」风格
       let b = (o.offhand ? 0 : Rules.mod(p.attrs[abil])) + (p.mods.dmg || 0);
+      if (!w && (p.flags && p.flags.ki)) b += (p.mods.monkDmg || 0);   // 武僧徒手加值
       if (w) b += (w.bonus && w.bonus.dmg) || 0;
       if (w && w.kind === 'ranged') b += (p.mods.rangedDmg || 0);
       if (o.offhand) b += (p.mods.offhandDmg || 0);
@@ -500,8 +681,11 @@
     },
     spellAttack(p) { return p.prof + Rules.spellMod(p) + (p.mods.spellHit || 0); },
     spellDc(p) { return 8 + p.prof + Rules.spellMod(p) + (p.mods.spellDc || 0); },
-    /** 5e 戏法随等级提升伤害骰（5 级 ×2，9 级 ×3） */
-    cantripMul(p) { return p.level >= 9 ? 3 : p.level >= 5 ? 2 : 1; },
+    /** 5e 戏法随角色等级成长：5 级 ×2、11 级 ×3、17 级 ×4 */
+    cantripMul(p) {
+      const lv = Rules.totalLevel(p);
+      return lv >= 17 ? 4 : lv >= 11 ? 3 : lv >= 5 ? 2 : 1;
+    },
     /** 把骰子表达式的骰数乘一个倍数 */
     scaleDice(spec, mul) {
       if (!mul || mul === 1) return spec;
@@ -557,6 +741,8 @@
         expertise: [],
         feats: [], styles: c.styles ? c.styles.slice() : [],
         asiTaken: [], choicesTaken: {}, spellChoicesTaken: [],
+        invocations: [], metamagics: [], pactBoon: null,
+        sorceryLeft: 0, wildShapeLeft: 0, inspirationLeft: 0,
         knownSpells: (c.knownSpells || []).slice(),
         prepared: (c.prepared || []).slice(),
         cantrips: (c.cantrips || []).slice(),
@@ -587,12 +773,13 @@
 
     /* ---------- 升级 ---------- */
     levelUp(p) {
-      if (Rules.totalLevel(p) >= 10) return null;
+      if (Rules.totalLevel(p) >= Rules.LEVEL_CAP) return null;
       // 默认把新等级加在「当前等级最低」的职业上（保持多职业均衡）；单职业则加在主职
       const entries = Rules.classEntries(p);
       const entry = entries.reduce((a, b) => (b.level < a.level ? b : a));
       const before = p.maxHp;
       entry.level += 1;
+      p.lastLeveledClassId = entry.id;   // 记下这一级落在哪个职业，供升级界面「职业进阶」选择
       Rules.normalizeClasses(p);   // 重新同步 p.level = 总等级、p.classId = 主职
       p.hitDice = p.hitDice || { die: Rules.classDef(p.classId).hitDie, total: 0, left: 0 };
       p.hitDice.total = p.level;
@@ -609,7 +796,7 @@
     gainXp(p, amount) {
       p.xp += amount;
       const ups = [];
-      while (p.level < 10 && p.xp >= Rules.xpNeeded(p.level)) {
+      while (p.level < Rules.LEVEL_CAP && p.xp >= Rules.xpNeeded(p.level)) {
         const u = Rules.levelUp(p);
         if (!u) break;
         ups.push(u);
@@ -643,6 +830,22 @@
             if (remain > 0 && cands.length > 0) out.push({ kind: 'expertise', classId: e.id, level: f.level, count: Math.min(remain, cands.length) });
           }
         }
+        // 职业专属选项：魔能祈愿 / 超魔 / 魔契恩泽（按「已解锁数量 − 已选数量」入列）
+        const choiceKinds = [
+          { kind: 'invocation', store: 'invocations', list: 'invocations' },
+          { kind: 'metamagic', store: 'metamagics', list: 'metamagics' },
+          { kind: 'pactBoon', store: null, list: 'pactBoons' },
+        ];
+        for (const ck of choiceKinds) {
+          const feats = (cls.features || []).filter((f) => f.choice === ck.kind && f.level <= e.level);
+          if (!feats.length) continue;
+          const granted = feats.reduce((a, f) => a + (f.choiceCount || 1), 0);
+          const have = ck.store ? (p[ck.store] || []).length : (p.pactBoon ? 1 : 0);
+          const remain = granted - have;
+          if (remain > 0 && (NK.Data.get('rules')[ck.list] || []).length > 0) {
+            out.push({ kind: ck.kind, classId: e.id, level: feats[0].level, count: remain });
+          }
+        }
       }
       // 法术：遍历所有施法职业，按总容量补足（戏法 / 已准备 / 已知分别只入列一次）
       for (const e of Rules.castingEntries(p)) {
@@ -654,7 +857,15 @@
           else { out.push({ kind: 'cantrips', classId: e.id, level: p.level, count: Math.min(Rules.spellCapacity(p).cantrips - (p.cantrips || []).length, pool.length) }); seen.cantrips = true; }
         }
         const cap = Rules.spellCapacity(p);
-        if (sc.prepared) {
+        // 法师这类「有法术书 + 需准备」的职业：按法术书的容量去学（学到的自动进入已准备，直到准备位满）
+        const bookOwn = !!sc.spellbook;
+        if (bookOwn) {
+          if (!seen.spellsKnown && (p.knownSpells || []).length < cap.known) {
+            const pool = Rules.spellPool(p, false);
+            if (pool.length === 0) { p.spellChoicesTaken = p.spellChoicesTaken || []; if (!p.spellChoicesTaken.includes(p.level)) p.spellChoicesTaken.push(p.level); }
+            else { out.push({ kind: 'spells', classId: e.id, level: p.level, count: Math.min(cap.known - (p.knownSpells || []).length, pool.length) }); seen.spellsKnown = true; }
+          }
+        } else if (sc.prepared) {
           if (!seen.spellsPrepared && (p.prepared || []).length < cap.prepared) {
             const pool = Rules.spellPool(p, false);
             if (pool.length === 0) { p.spellChoicesTaken = p.spellChoicesTaken || []; if (!p.spellChoicesTaken.includes(p.level)) p.spellChoicesTaken.push(p.level); }
@@ -668,7 +879,10 @@
           }
         }
       }
-      return out.sort((a, b) => a.level - b.level);
+      out.sort((a, b) => a.level - b.level);
+      // 职业进阶（兼职）：放在最后，先让玩家把子职/属性/法术这类本职成长处理完，再决定这一级落在哪个职业
+      if (p.lastLeveledClassId) out.push({ kind: 'classlevel', level: p.level, classId: p.lastLeveledClassId });
+      return out;
     },
 
     chooseSubclass(p, id, classId) {
@@ -723,12 +937,97 @@
       Rules.recalc(p);
       return { ok: true, msg: `战斗风格：${st.name} —— ${st.desc}` };
     },
+    chooseInvocation(p, id) {
+      const o = Rules.invocationDef(id);
+      if (!o) return { ok: false, msg: '没有这个魔能祈愿' };
+      if (!p.invocations) p.invocations = [];
+      if (p.invocations.includes(id)) return { ok: false, msg: '已经拥有该魔能祈愿' };
+      p.invocations.push(id);
+      Rules.recalc(p);
+      return { ok: true, msg: `魔能祈愿「${o.name}」：${o.desc}` };
+    },
+    chooseMetamagic(p, id) {
+      const o = Rules.metamagicDef(id);
+      if (!o) return { ok: false, msg: '没有这个超魔' };
+      if (!p.metamagics) p.metamagics = [];
+      if (p.metamagics.includes(id)) return { ok: false, msg: '已经拥有该超魔' };
+      p.metamagics.push(id);
+      Rules.recalc(p);
+      const max = Rules.sorceryMax(p);
+      if (max > 0 && p.sorceryLeft === undefined) p.sorceryLeft = max;
+      return { ok: true, msg: `超魔「${o.name}」：${o.desc}（术法点上限 ${max}）` };
+    },
+    choosePactBoon(p, id) {
+      const o = Rules.pactBoonDef(id);
+      if (!o) return { ok: false, msg: '没有这个魔契' };
+      if (p.pactBoon) return { ok: false, msg: '已经结下魔契' };
+      p.pactBoon = id;
+      Rules.recalc(p);
+      return { ok: true, msg: `魔契「${o.name}」：${o.desc}` };
+    },
     chooseExpertise(p, skillId) {
       if (!(p.proficiencies.skills || []).includes(skillId)) return { ok: false, msg: '只能专精已熟练的技能' };
       if (!p.expertise) p.expertise = [];
       if (p.expertise.includes(skillId)) return { ok: false, msg: '已经专精' };
       p.expertise.push(skillId);
       return { ok: true, msg: `专精「${Rules.skillDef(skillId).name}」：该技能检定 +3。` };
+    },
+    /** 5e 兼职熟练表：新开一个兼职职业时，只授予它「兼职栏」里列的那些熟练（不含豁免熟练） */
+    MULTICLASS_PROFS: {
+      barbarian: { armor: ['shield'], weapons: ['simple', 'martial'] },
+      bard: { armor: ['light'], weapons: ['simple'] },
+      cleric: { armor: ['light', 'medium', 'shield'], weapons: [] },
+      druid: { armor: ['light', 'medium', 'shield'], weapons: [] },
+      warrior: { armor: ['light', 'medium', 'shield'], weapons: ['simple', 'martial'] },
+      monk: { armor: [], weapons: ['simple'] },
+      paladin: { armor: ['light', 'medium', 'shield'], weapons: ['simple', 'martial'] },
+      ranger: { armor: ['light', 'medium', 'shield'], weapons: ['simple', 'martial'] },
+      rogue: { armor: ['light'], weapons: ['simple'] },
+      sorcerer: { armor: [], weapons: [] },
+      warlock: { armor: ['light'], weapons: ['simple'] },
+      wizard: { armor: [], weapons: [] },
+      artificer: { armor: ['light', 'medium', 'shield'], weapons: ['simple'] },
+    },
+    /** 新开兼职时授予熟练，返回新增的熟练描述（5e：不给新职业的豁免熟练） */
+    grantMulticlassProfs(p, clsId) {
+      const t = Rules.MULTICLASS_PROFS[clsId];
+      if (!t) return [];
+      const profs = p.proficiencies || (p.proficiencies = {});
+      profs.armor = profs.armor || [];
+      profs.weapons = profs.weapons || [];
+      const got = [];
+      for (const a of t.armor) if (!profs.armor.includes(a)) { profs.armor.push(a); got.push(a === 'shield' ? '盾牌' : (a === 'light' ? '轻甲' : '中甲')); }
+      for (const w of t.weapons) if (!profs.weapons.includes(w)) { profs.weapons.push(w); got.push(w === 'simple' ? '简易武器' : '军用武器'); }
+      return got;
+    },
+    /** 职业进阶：把刚获得的等级重新分配到指定职业（确认默认 / 改投其它已有职业 / 新开一个兼职） */
+    chooseClassLevel(p, payload) {
+      const fromId = p.lastLeveledClassId;
+      if (!fromId) return { ok: false, msg: '没有可分配的等级' };
+      const targetId = (payload && (payload.newClassId || payload.classId)) || null;
+      if (!targetId) return { ok: false, msg: '请选择要进阶的职业' };
+      const from = (p.classes || []).find((e) => e.id === fromId);
+      if (!from || from.level < 1) return { ok: false, msg: '来源职业等级不足' };
+      if (targetId === fromId) {
+        p.lastLeveledClassId = null;
+        return { ok: true, msg: `确认进阶：${Rules.classDef(fromId).name} 提升 1 级（现为 ${from.level} 级）。` };
+      }
+      let to = (p.classes || []).find((e) => e.id === targetId);
+      let gotProfs = [];
+      if (!to) {
+        if (Rules.totalLevel(p) >= Rules.LEVEL_CAP) return { ok: false, msg: `总等级已达 ${Rules.LEVEL_CAP}，不能再开新职业。` };
+        to = { id: targetId, level: 0, subclassId: null };
+        p.classes.push(to);
+        gotProfs = Rules.grantMulticlassProfs(p, targetId);   // 兼职会授予新职业的部分熟练
+      }
+      from.level -= 1;
+      to.level += 1;
+      if (from.level <= 0) p.classes = p.classes.filter((e) => !(e.id === fromId && e.level <= 0));
+      p.lastLeveledClassId = null;
+      Rules.normalizeClasses(p);
+      Rules.recalc(p);
+      const profMsg = gotProfs.length ? `　新职业带来熟练：${gotProfs.join('、')}。` : '';
+      return { ok: true, msg: `重新分配等级：${Rules.classDef(fromId).name} −1，${Rules.classDef(targetId).name} +1（现为 ${Rules.classDef(targetId).name} ${to.level} 级）。${profMsg}` };
     },
     learnSpell(p, spellId, asCantrip, classId) {
       const sp = Rules.spellDef(spellId);
@@ -739,6 +1038,11 @@
       const sc = cls && cls.spellcasting;
       if (asCantrip) {
         if (!p.cantrips.includes(spellId)) p.cantrips.push(spellId);
+      } else if (sc && sc.spellbook) {
+        if (!p.knownSpells.includes(spellId)) p.knownSpells.push(spellId);
+        // 抄进法术书的法术会自动占一个「已准备」位（直到准备位满，长休时可以重选）
+        const capP = Rules.spellCapacity(p).prepared;
+        if (sc.prepared && !p.prepared.includes(spellId) && (p.prepared || []).length < capP) p.prepared.push(spellId);
       } else if (sc && sc.prepared) {
         if (!p.prepared.includes(spellId)) p.prepared.push(spellId);
       } else {
@@ -747,11 +1051,19 @@
       p.spellChoicesTaken = p.spellChoicesTaken || [];
       return { ok: true, msg: `学会了「${sp.name}」` };
     },
-    /** 长休时重新准备法术：先清空再重新填 */
+    /** 长休时重新准备法术：法师只能从法术书里挑；牧师/德鲁伊等可以从整个职业列表里挑 */
     resetPrepared(p, ids) {
-      const cap = Rules.spellCapacity(p);
-      p.prepared = ids.slice(0, cap.prepared);
-      return { ok: true, msg: `已重新准备 ${p.prepared.length} 个法术。` };
+      const cap = Rules.spellCapacity(p).prepared;
+      const cs = Rules.castingEntries(p);
+      const hasBook = cs.some((e) => (Rules.classDef(e.id).spellcasting || {}).spellbook);
+      const ok = (ids || []).filter((id) => {
+        const sp = Rules.spellDef(id);
+        if (!sp || sp.level === 0) return false;
+        if (hasBook) return (p.knownSpells || []).includes(id);
+        return (sp.classes || []).some((c) => cs.some((e) => Rules.spellListOf(e.id).includes(c)));
+      });
+      p.prepared = ok.slice(0, cap);
+      return { ok: true, msg: `已重新准备 ${p.prepared.length} 个法术（上限 ${cap}）。` };
     },
   };
 

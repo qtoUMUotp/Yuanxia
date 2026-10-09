@@ -103,7 +103,9 @@ try {
   if (!rage) throw new Error('无狂暴附赠动作');
   if (!p.raging) { NK.Combat.playerAction(c, { type: 'bonus', id: 'rage' }); }
   if (!p.raging) throw new Error('狂暴未触发');
-  if (p.rageDr <= 0 || p.rageDmg <= 0) throw new Error('狂暴数值缺失');
+  // 5e：狂暴给的是「物理抗性（减半）」而不是固定减值，rageDr 按设计为 0
+  const phys = ['挥砍', '穿刺', '钝击'].every((t) => (p.resist || []).includes(t));
+  if (!phys || p.rageDmg <= 0) throw new Error('狂暴数值缺失（抗性/增伤）');
   console.log(`野蛮人狂暴 OK：raging=${p.raging} rageDr=${p.rageDr} rageDmg=${p.rageDmg} rageLeft=${p.rageLeft}/${p.rageMax}`);
 } catch (e) { bad++; console.log('  X 野蛮人狂暴 ->', e.message); }
 
