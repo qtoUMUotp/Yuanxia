@@ -1,0 +1,2321 @@
+{
+  "_note": "6 个职业。subclassLevel 为选择子职的等级；asiLevels 为属性提升/专长等级；spellcasting 为 null 表示不施法。features.effects 的关键字由 js/rules.js 聚合、js/combat.js 实现。",
+  "classes": [
+    {
+      "id": "warrior",
+      "name": "战士",
+      "hitDie": 10,
+      "primary": "str",
+      "secondary": "con",
+      "saveProfs": [
+        "str",
+        "con"
+      ],
+      "armorProfs": [
+        "light",
+        "medium",
+        "heavy",
+        "shield"
+      ],
+      "weaponProfs": [
+        "simple",
+        "martial"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "athletics",
+          "animal_handling",
+          "history",
+          "insight",
+          "intimidation",
+          "perception",
+          "survival"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        6,
+        8
+      ],
+      "spellcasting": null,
+      "startGold": 120,
+      "hitDiceCount": 10,
+      "blurb": "最耐打、最稳、最不花哨。用回气、动作如潮和额外攻击把每一回合都榨干。",
+      "features": [
+        {
+          "level": 1,
+          "name": "回气",
+          "desc": "附赠动作：每场战斗一次，回复 1d10 + 等级 点生命。",
+          "effects": {
+            "secondWind": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "战斗风格",
+          "desc": "选择一种战斗风格，决定你的输出或防御方式。",
+          "effects": {},
+          "choice": "fightingStyle"
+        },
+        {
+          "level": 2,
+          "name": "动作如潮",
+          "desc": "每场战斗一次，本回合额外获得一个动作。",
+          "effects": {
+            "actionSurge": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "额外攻击",
+          "desc": "使用攻击动作时攻击两次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 9,
+          "name": "不屈",
+          "desc": "每场战斗一次，豁免失败时可以重投。",
+          "effects": {
+            "indomitable": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "champion",
+          "name": "勇士",
+          "desc": "把「打得准」这件事做到极致。简单、直接、致命。",
+          "features": [
+            {
+              "level": 3,
+              "name": "精通重击",
+              "desc": "重击范围扩大到 19-20。",
+              "effects": {
+                "critRange": 19
+              }
+            },
+            {
+              "level": 7,
+              "name": "运动健将",
+              "desc": "最大生命 +12，力量检定 +2。",
+              "effects": {
+                "maxHp": 12,
+                "skillBonus": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "额外战斗风格",
+              "desc": "AC +1，伤害 +2。",
+              "effects": {
+                "ac": 1,
+                "dmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "battlemaster",
+          "name": "战斗大师",
+          "desc": "把战斗当成一门手艺。用卓越骰决定什么时候该赢。",
+          "features": [
+            {
+              "level": 3,
+              "name": "卓越骰",
+              "desc": "获得 4 枚 d8 卓越骰，每场战斗开始时恢复；命中时可以消耗一枚增加伤害与效果。",
+              "effects": {
+                "superiority": 4
+              }
+            },
+            {
+              "level": 7,
+              "name": "战技精研",
+              "desc": "卓越骰提升为 d10，命中 +1。",
+              "effects": {
+                "superiorityDie": 10,
+                "hit": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "战术大师",
+              "desc": "卓越骰数量 +2，伤害 +1。",
+              "effects": {
+                "superiority": 2,
+                "dmg": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "berserker",
+          "name": "狂战士",
+          "desc": "怒火就是你的武器。越打越疼，越疼越不想停。",
+          "features": [
+            {
+              "level": 3,
+              "name": "狂暴",
+              "desc": "伤害 +2，最大生命 +8。",
+              "effects": {
+                "dmg": 2,
+                "maxHp": 8
+              }
+            },
+            {
+              "level": 7,
+              "name": "不屈狂怒",
+              "desc": "最大生命 +12，受到伤害 -1。",
+              "effects": {
+                "maxHp": 12,
+                "dr": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "致命狂怒",
+              "desc": "重击范围 19-20，伤害 +2。",
+              "effects": {
+                "critRange": 19,
+                "dmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rogue",
+      "name": "游荡者",
+      "hitDie": 8,
+      "primary": "dex",
+      "secondary": "int",
+      "saveProfs": [
+        "dex",
+        "int"
+      ],
+      "armorProfs": [
+        "light"
+      ],
+      "weaponProfs": [
+        "simple",
+        "rogue"
+      ],
+      "skillChoices": {
+        "count": 4,
+        "from": [
+          "acrobatics",
+          "athletics",
+          "deception",
+          "insight",
+          "intimidation",
+          "investigation",
+          "perception",
+          "performance",
+          "persuasion",
+          "sleight_of_hand",
+          "stealth"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8,
+        10
+      ],
+      "spellcasting": null,
+      "startGold": 140,
+      "hitDiceCount": 8,
+      "blurb": "靠优势吃饭：偷袭骰、灵巧动作、闪避。打不中你就等于没打。",
+      "features": [
+        {
+          "level": 1,
+          "name": "偷袭",
+          "desc": "攻击检定具有优势时，额外造成 1d6 伤害。每 2 级提升 1d6。",
+          "effects": {
+            "sneakAttack": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "专精",
+          "desc": "选择 2 项已有熟练的技能，其检定加值再 +3。",
+          "effects": {},
+          "choice": "expertise",
+          "choiceCount": 2
+        },
+        {
+          "level": 2,
+          "name": "灵巧动作",
+          "desc": "附赠动作：本回合可以隐匿（下一次攻击获得优势）或撤离（AC +2 直到下回合）。",
+          "effects": {
+            "cunningAction": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "稳定瞄准",
+          "desc": "附赠动作：本回合没有移动过时，专注瞄准一个目标，下一次攻击检定具有优势。为单人游荡者设计的替代方案——没有人帮你夹击，就自己找角度。",
+          "effects": {
+            "steadyAim": 1
+          }
+        },
+        {
+          "level": 3,
+          "name": "偷袭提升",
+          "desc": "偷袭伤害提升为 2d6。",
+          "effects": {
+            "sneakAttack": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "不屈闪避",
+          "desc": "每回合一次，被命中时可以令该次伤害减半。偷袭提升为 3d6。",
+          "effects": {
+            "uncannyDodge": 1,
+            "sneakAttack": 1
+          }
+        },
+        {
+          "level": 7,
+          "name": "闪避",
+          "desc": "需要敏捷豁免的伤害减半效果改为完全不受伤害。偷袭提升为 4d6。",
+          "effects": {
+            "evasion": 1,
+            "sneakAttack": 1
+          }
+        },
+        {
+          "level": 9,
+          "name": "偷袭提升",
+          "desc": "偷袭伤害提升为 5d6。",
+          "effects": {
+            "sneakAttack": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "assassin",
+          "name": "刺客",
+          "desc": "在别人反应过来之前结束战斗。",
+          "features": [
+            {
+              "level": 3,
+              "name": "突袭",
+              "desc": "战斗第一回合，你对尚未行动过的敌人攻击具有优势；命中即重击。",
+              "effects": {
+                "assassinate": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "致命毒素",
+              "desc": "每次命中额外造成 1d6 毒素伤害。",
+              "effects": {
+                "poisonDice": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "死亡一击",
+              "desc": "对生命低于 30% 的敌人必定重击。",
+              "effects": {
+                "executeCrit": 0.3
+              }
+            }
+          ]
+        },
+        {
+          "id": "thief",
+          "name": "盗贼",
+          "desc": "手脚比别人快一倍，什么都拿得走。",
+          "features": [
+            {
+              "level": 3,
+              "name": "快手",
+              "desc": "使用物品改为附赠动作；每场战斗第一次攻击有优势。",
+              "effects": {
+                "fastHands": 1,
+                "firstAttackAdvantage": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "轻身",
+              "desc": "AC +1，隐匿检定 +3。",
+              "effects": {
+                "ac": 1,
+                "skillBonus": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "万能工具",
+              "desc": "命中 +1，伤害 +2。",
+              "effects": {
+                "hit": 1,
+                "dmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ranger",
+      "name": "游侠",
+      "hitDie": 10,
+      "primary": "dex",
+      "secondary": "wis",
+      "saveProfs": [
+        "str",
+        "dex"
+      ],
+      "armorProfs": [
+        "light",
+        "medium",
+        "shield"
+      ],
+      "weaponProfs": [
+        "simple",
+        "martial"
+      ],
+      "skillChoices": {
+        "count": 3,
+        "from": [
+          "animal_handling",
+          "athletics",
+          "insight",
+          "investigation",
+          "nature",
+          "perception",
+          "stealth",
+          "survival"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": {
+        "type": "half",
+        "ability": "wis",
+        "cantrips": 0,
+        "known": true,
+        "knownByLevel": [
+          0,
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "startGold": 130,
+      "hitDiceCount": 10,
+      "blurb": "半个战士加半个施法者。猎人印记让每一次命中都更疼。",
+      "features": [
+        {
+          "level": 1,
+          "name": "宿敌",
+          "desc": "你对野兽、类人与亡灵的攻击检定具有优势（简化为：对这三类敌人命中 +2、伤害 +2）。",
+          "effects": {
+            "favoredEnemy": 2
+          }
+        },
+        {
+          "level": 1,
+          "name": "自然探索者",
+          "desc": "生存与察觉检定 +2；每局额外获得 1 次短休。",
+          "effects": {
+            "skillBonus": 2,
+            "restShort": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "战斗风格",
+          "desc": "选择一种战斗风格。",
+          "effects": {},
+          "choice": "fightingStyle"
+        },
+        {
+          "level": 5,
+          "name": "额外攻击",
+          "desc": "使用攻击动作时攻击两次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 6,
+          "name": "宿敌提升",
+          "desc": "针对宿敌的加值提升为 +3。最大生命 +8。",
+          "effects": {
+            "favoredEnemy": 1,
+            "maxHp": 8
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "hunter",
+          "name": "猎人",
+          "desc": "把一只怪物拆成几块所需的知识，你都有。",
+          "features": [
+            {
+              "level": 3,
+              "name": "巨兽杀手",
+              "desc": "对生命上限高于你的敌人，每回合第一次命中额外造成 1d8 伤害。",
+              "effects": {
+                "giantKiller": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "多重攻击防御",
+              "desc": "被 2 个以上敌人包围时 AC +2；伤害 +1。",
+              "effects": {
+                "defensiveTactics": 1,
+                "dmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "猎杀专家",
+              "desc": "命中 +2，重击范围 19-20。",
+              "effects": {
+                "hit": 2,
+                "critRange": 19
+              }
+            }
+          ]
+        },
+        {
+          "id": "gloomstalker",
+          "name": "幽域追猎者",
+          "desc": "你从黑暗里来，第一刀永远比别人快。",
+          "features": [
+            {
+              "level": 3,
+              "name": "恐惧伏击",
+              "desc": "战斗第一回合：先攻 +5，移动与攻击都更快，第一次攻击额外造成 1d8 伤害。",
+              "effects": {
+                "dreadAmbusher": 1,
+                "initiative": 5
+              }
+            },
+            {
+              "level": 7,
+              "name": "暗影之眼",
+              "desc": "在黑暗中隐形；每场战斗第一次攻击有优势。",
+              "effects": {
+                "firstAttackAdvantage": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "幽域之影",
+              "desc": "每场战斗开始时获得 10 点临时生命，AC +1。",
+              "effects": {
+                "battleStartTempHp": 10,
+                "ac": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cleric",
+      "name": "牧师",
+      "hitDie": 8,
+      "primary": "wis",
+      "secondary": "con",
+      "saveProfs": [
+        "wis",
+        "cha"
+      ],
+      "armorProfs": [
+        "light",
+        "medium",
+        "shield"
+      ],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "history",
+          "insight",
+          "medicine",
+          "persuasion",
+          "religion"
+        ]
+      },
+      "subclassLevel": 1,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": {
+        "type": "full",
+        "ability": "wis",
+        "cantrips": 3,
+        "prepared": true
+      },
+      "startGold": 110,
+      "hitDiceCount": 8,
+      "blurb": "全能：治疗、伤害、控制、复活自己。附赠动作的治疗真言是救命的东西。",
+      "features": [
+        {
+          "level": 2,
+          "name": "引导神力",
+          "desc": "每场战斗一次，使用领域专属的引导神力效果。",
+          "effects": {
+            "channelDivinity": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "摧毁亡灵",
+          "desc": "对亡灵造成的伤害 +3。",
+          "effects": {
+            "undeadSlayer": 3
+          }
+        },
+        {
+          "level": 8,
+          "name": "神圣打击",
+          "desc": "每回合第一次武器命中额外造成 1d8 光耀伤害。",
+          "effects": {
+            "divineStrike": 1
+          }
+        },
+        {
+          "level": 10,
+          "name": "神力干预",
+          "desc": "每局一次，生命降到 0 时以一半生命复活。",
+          "effects": {
+            "divineIntervention": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "life",
+          "name": "生命领域",
+          "desc": "把治疗量堆到荒谬的程度。队里没人的时候，就是自己活得久。",
+          "features": [
+            {
+              "level": 1,
+              "name": "生命门徒",
+              "desc": "所有治疗效果额外 +2 + 等级。",
+              "effects": {
+                "healBonusPerLevel": 1,
+                "healBonus": 2
+              }
+            },
+            {
+              "level": 2,
+              "name": "引导神力：维生",
+              "desc": "引导神力：回复 3d8 + 感知 点生命。",
+              "effects": {
+                "channelHeal": "3d8"
+              }
+            },
+            {
+              "level": 6,
+              "name": "守御之光",
+              "desc": "受到伤害时，若生命低于一半，AC +2。",
+              "effects": {
+                "wardingFlare": 1
+              }
+            },
+            {
+              "level": 8,
+              "name": "神圣打击强化",
+              "desc": "武器命中额外造成 1d8 光耀伤害（与职业特性叠加）。",
+              "effects": {
+                "divineStrike": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "light",
+          "name": "光明领域",
+          "desc": "把光变成武器。火球术也是光的一种。",
+          "features": [
+            {
+              "level": 1,
+              "name": "光亮守护",
+              "desc": "戏法「圣火」伤害 +2；法术 DC +1。",
+              "effects": {
+                "spellDc": 1,
+                "dmg": 0
+              }
+            },
+            {
+              "level": 2,
+              "name": "引导神力：灼光",
+              "desc": "引导神力：按 3d6 + 感知 的火焰伤害结算，对所有敌人（敏捷豁免减半）。",
+              "effects": {
+                "channelBurst": "3d6"
+              }
+            },
+            {
+              "level": 6,
+              "name": "光耀防护",
+              "desc": "每场战斗开始时获得 8 点临时生命；法术强度 +2。",
+              "effects": {
+                "battleStartTempHp": 8,
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 8,
+              "name": "炽光",
+              "desc": "法术强度 +3。",
+              "effects": {
+                "spellDmg": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "war",
+          "name": "战争领域",
+          "desc": "把神祇的怒火变成你手里的武器。能打，也能扛。",
+          "features": [
+            {
+              "level": 1,
+              "name": "战争神职",
+              "desc": "AC +1。",
+              "effects": {
+                "ac": 1
+              }
+            },
+            {
+              "level": 2,
+              "name": "战斗祝福",
+              "desc": "命中 +1，伤害 +1。",
+              "effects": {
+                "hit": 1,
+                "dmg": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "神圣军备",
+              "desc": "最大生命 +10，命中 +1。",
+              "effects": {
+                "maxHp": 10,
+                "hit": 1
+              }
+            },
+            {
+              "level": 8,
+              "name": "战争祭司",
+              "desc": "额外攻击；伤害 +1。",
+              "effects": {
+                "extraAttack": 1,
+                "dmg": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wizard",
+      "name": "法师",
+      "hitDie": 6,
+      "primary": "int",
+      "secondary": "con",
+      "saveProfs": [
+        "int",
+        "wis"
+      ],
+      "armorProfs": [],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "arcana",
+          "history",
+          "insight",
+          "investigation",
+          "medicine",
+          "religion"
+        ]
+      },
+      "subclassLevel": 2,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": {
+        "type": "full",
+        "ability": "int",
+        "cantrips": 3,
+        "spellbook": true,
+        "spellsAtLevel1": 6,
+        "spellsPerLevel": 2
+      },
+      "startGold": 100,
+      "hitDiceCount": 6,
+      "blurb": "血最少、法术最多。法术位管理就是你的全部游戏。",
+      "features": [
+        {
+          "level": 1,
+          "name": "法师护甲",
+          "desc": "AC 变为 13 + 敏捷调整值 + 2（不穿甲时），最大生命 +20。",
+          "effects": {
+            "acSet": {
+              "base": 13,
+              "addDex": true
+            },
+            "ac": 2,
+            "maxHp": 20
+          }
+        },
+        {
+          "level": 1,
+          "name": "奥术护体",
+          "desc": "每场战斗开始时获得等于 2×等级 的奥术护盾。",
+          "effects": {
+            "arcaneWard": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "奥术恢复",
+          "desc": "每次短休可以恢复法术位（总环阶不超过等级的一半，向上取整）。",
+          "effects": {
+            "arcaneRecovery": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "法术精研",
+          "desc": "法术 DC +1。",
+          "effects": {
+            "spellDc": 1
+          }
+        },
+        {
+          "level": 8,
+          "name": "法术精通",
+          "desc": "法术强度 +2，最大生命 +8。",
+          "effects": {
+            "spellDmg": 2,
+            "maxHp": 8
+          }
+        },
+        {
+          "level": 10,
+          "name": "大法师",
+          "desc": "法术强度 +2，法术 DC +1。",
+          "effects": {
+            "spellDmg": 2,
+            "spellDc": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "evocation",
+          "name": "塑能学派",
+          "desc": "纯粹的火力。把每一滴法力都换成伤害数字。",
+          "features": [
+            {
+              "level": 2,
+              "name": "塑能学者",
+              "desc": "范围法术的伤害 +2；抄写新法术更快（每级多学 1 个法术）。",
+              "effects": {
+                "spellDmg": 2,
+                "extraSpellPerLevel": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "强化塑能",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "强效塑能",
+              "desc": "法术伤害骰翻倍的效果改为：所有伤害法术 +3 伤害与 +1 DC。",
+              "effects": {
+                "spellDmg": 3,
+                "spellDc": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "abjuration",
+          "name": "防护学派",
+          "desc": "把法师变成能站在前排的人。护盾、抗性、反制。",
+          "features": [
+            {
+              "level": 2,
+              "name": "奥术结界",
+              "desc": "获得等于 2×等级 的护盾池，战斗开始时自动补满。",
+              "effects": {
+                "arcaneWard": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "投射结界",
+              "desc": "结界值翻倍，每场战斗开始时获得 6 点临时生命。",
+              "effects": {
+                "arcaneWard": 1,
+                "battleStartTempHp": 6
+              }
+            },
+            {
+              "level": 10,
+              "name": "法术抗性",
+              "desc": "受到的伤害 -3，AC +2。",
+              "effects": {
+                "dr": 3,
+                "ac": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "conjuration",
+          "name": "咒法学派",
+          "desc": "把敌人拉过来，把朋友送回去。位移与控制就是咒法。",
+          "features": [
+            {
+              "level": 2,
+              "name": "咒文专精",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 6,
+              "name": "强化咒文",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "瞬发咒文",
+              "desc": "法术 DC +1，法术强度 +2。",
+              "effects": {
+                "spellDc": 1,
+                "spellDmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "illusion",
+          "name": "幻术学派",
+          "desc": "你看到的不是真的，但疼是真的。",
+          "features": [
+            {
+              "level": 2,
+              "name": "幻术精通",
+              "desc": "法术 DC +1。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "幻影强化",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "虚实之间",
+              "desc": "法术 DC +1，最大生命 +8。",
+              "effects": {
+                "spellDc": 1,
+                "maxHp": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "paladin",
+      "name": "圣武士",
+      "hitDie": 10,
+      "primary": "str",
+      "secondary": "cha",
+      "saveProfs": [
+        "wis",
+        "cha"
+      ],
+      "armorProfs": [
+        "light",
+        "medium",
+        "heavy",
+        "shield"
+      ],
+      "weaponProfs": [
+        "simple",
+        "martial"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "athletics",
+          "insight",
+          "intimidation",
+          "medicine",
+          "persuasion",
+          "religion"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": {
+        "type": "half",
+        "ability": "cha",
+        "cantrips": 0,
+        "prepared": true
+      },
+      "startGold": 130,
+      "hitDiceCount": 10,
+      "blurb": "前排 + 治疗 + 至圣斩。爆发最高的一刀，通常来自一个法术位。",
+      "features": [
+        {
+          "level": 1,
+          "name": "圣疗",
+          "desc": "拥有一个治疗池（5 × 等级），可以用动作从中取出任意点数治疗自己。",
+          "effects": {
+            "layOnHands": 5
+          }
+        },
+        {
+          "level": 1,
+          "name": "神圣感知",
+          "desc": "感知范围内的邪魔与亡灵；对抗恐惧的豁免 +3。",
+          "effects": {
+            "saveBonus": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "至圣斩",
+          "desc": "命中时消耗一个法术位，额外造成 2d8 光耀伤害（每高 1 环 +1d8）。",
+          "effects": {
+            "divineSmite": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "战斗风格",
+          "desc": "选择一种战斗风格。",
+          "effects": {},
+          "choice": "fightingStyle"
+        },
+        {
+          "level": 5,
+          "name": "额外攻击",
+          "desc": "使用攻击动作时攻击两次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 6,
+          "name": "守护光环",
+          "desc": "所有豁免加值额外加上魅力调整值。",
+          "effects": {
+            "auraSave": 1
+          }
+        },
+        {
+          "level": 10,
+          "name": "勇气光环",
+          "desc": "免疫恐惧；最大生命 +10。",
+          "effects": {
+            "fearImmune": 1,
+            "maxHp": 10
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "devotion",
+          "name": "奉献誓言",
+          "desc": "你的誓言本身就是武器。诚实、勇敢、而且非常难缠。",
+          "features": [
+            {
+              "level": 3,
+              "name": "神圣武器",
+              "desc": "每场战斗一次，附赠动作：3 回合内命中 +魅力调整值，武器视为魔法。",
+              "effects": {
+                "sacredWeapon": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "奉献光环",
+              "desc": "免疫魅惑；AC +1。",
+              "effects": {
+                "charmImmune": 1,
+                "ac": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "纯洁之魂",
+              "desc": "受到的伤害 -2，最大生命 +12。",
+              "effects": {
+                "dr": 2,
+                "maxHp": 12
+              }
+            }
+          ]
+        },
+        {
+          "id": "vengeance",
+          "name": "复仇誓言",
+          "desc": "你不在乎规则，你只在乎那个人死。",
+          "features": [
+            {
+              "level": 3,
+              "name": "仇敌誓言",
+              "desc": "每场战斗一次，附赠动作：标记一个敌人，你对它的攻击具有优势，持续到它死。",
+              "effects": {
+                "vowOfEnmity": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "不屈复仇者",
+              "desc": "被击中后，你下一次攻击具有优势。",
+              "effects": {
+                "relentlessAvenger": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "灵魂追猎",
+              "desc": "伤害 +3，重击范围 19-20。",
+              "effects": {
+                "dmg": 3,
+                "critRange": 19
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sorcerer",
+      "name": "术士",
+      "hitDie": 6,
+      "primary": "cha",
+      "secondary": "con",
+      "saveProfs": [
+        "cha",
+        "con"
+      ],
+      "armorProfs": [],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "arcana",
+          "deception",
+          "insight",
+          "intimidation",
+          "persuasion",
+          "religion"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellList": [
+        "wizard"
+      ],
+      "spellcasting": {
+        "type": "full",
+        "ability": "cha",
+        "cantrips": 4,
+        "known": true,
+        "knownByLevel": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      },
+      "startGold": 100,
+      "hitDiceCount": 6,
+      "blurb": "法术不是学来的，是你血脉里带的。一口气把法力榨干的爽快，没人比得上。",
+      "features": [
+        {
+          "level": 1,
+          "name": "术法来源",
+          "desc": "法术 DC +1，法术强度 +1。",
+          "effects": {
+            "spellDc": 1,
+            "spellDmg": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "法术转生",
+          "desc": "每局额外获得 1 次短休。",
+          "effects": {
+            "restShort": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "法术穿透",
+          "desc": "法术 DC +1，法术强度 +1。",
+          "effects": {
+            "spellDc": 1,
+            "spellDmg": 1
+          }
+        },
+        {
+          "level": 6,
+          "name": "血脉之力",
+          "desc": "最大生命 +8，受到伤害 -1。",
+          "effects": {
+            "maxHp": 8,
+            "dr": 1
+          }
+        },
+        {
+          "level": 8,
+          "name": "强效术法",
+          "desc": "法术强度 +2。",
+          "effects": {
+            "spellDmg": 2
+          }
+        },
+        {
+          "level": 10,
+          "name": "真名术法",
+          "desc": "法术 DC +1，法术强度 +2。",
+          "effects": {
+            "spellDc": 1,
+            "spellDmg": 2
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "draconic",
+          "name": "龙脉术士",
+          "desc": "你的血里住着一条龙。硬，而且烫。",
+          "features": [
+            {
+              "level": 3,
+              "name": "龙鳞",
+              "desc": "最大生命 +10，法术强度 +1。",
+              "effects": {
+                "maxHp": 10,
+                "spellDmg": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "元素亲和",
+              "desc": "火焰/冰霜/闪电伤害 +2。",
+              "effects": {
+                "elemDmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "龙之韧性",
+              "desc": "最大生命 +12，受到伤害 -2。",
+              "effects": {
+                "maxHp": 12,
+                "dr": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "wild_magic",
+          "name": "灾祸术士",
+          "desc": "你施法的时候，连运气都站你这边。",
+          "features": [
+            {
+              "level": 3,
+              "name": "混乱术法",
+              "desc": "每场战斗额外获得 2 次重投机会。",
+              "effects": {
+                "luckPoints": 2
+              }
+            },
+            {
+              "level": 7,
+              "name": "幸运爆发",
+              "desc": "每场战斗额外获得 1 次重投；法术强度 +1。",
+              "effects": {
+                "luckPoints": 1,
+                "spellDmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "熵增",
+              "desc": "法术强度 +3。",
+              "effects": {
+                "spellDmg": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bard",
+      "name": "吟游诗人",
+      "hitDie": 8,
+      "primary": "cha",
+      "secondary": "dex",
+      "saveProfs": [
+        "dex",
+        "cha"
+      ],
+      "armorProfs": [
+        "light"
+      ],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 3,
+        "from": [
+          "acrobatics",
+          "arcana",
+          "deception",
+          "history",
+          "insight",
+          "intimidation",
+          "investigation",
+          "performance",
+          "persuasion",
+          "stealth"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellList": [
+        "wizard",
+        "cleric"
+      ],
+      "spellcasting": {
+        "type": "full",
+        "ability": "cha",
+        "cantrips": 2,
+        "known": true,
+        "knownByLevel": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ]
+      },
+      "startGold": 110,
+      "hitDiceCount": 8,
+      "blurb": "什么都懂一点，什么都来一点。控场、辅助、补刀，一首歌的时间就够了。",
+      "features": [
+        {
+          "level": 1,
+          "name": "吟游灵感",
+          "desc": "所有技能检定 +1；最大生命 +6。",
+          "effects": {
+            "skillBonus": 1,
+            "maxHp": 6
+          }
+        },
+        {
+          "level": 2,
+          "name": "表演大师",
+          "desc": "技能检定再 +2。",
+          "effects": {
+            "skillBonus": 2
+          }
+        },
+        {
+          "level": 5,
+          "name": "反击演奏",
+          "desc": "法术 DC +1。",
+          "effects": {
+            "spellDc": 1
+          }
+        },
+        {
+          "level": 8,
+          "name": "精通表演",
+          "desc": "技能检定 +1，法术强度 +1。",
+          "effects": {
+            "skillBonus": 1,
+            "spellDmg": 1
+          }
+        },
+        {
+          "level": 10,
+          "name": "魔法秘典",
+          "desc": "法术 DC +1，法术强度 +2。",
+          "effects": {
+            "spellDc": 1,
+            "spellDmg": 2
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "valor",
+          "name": "勇武诗人",
+          "desc": "把战歌当成武器。能打能扛还能奶。",
+          "features": [
+            {
+              "level": 3,
+              "name": "战歌",
+              "desc": "AC +1。",
+              "effects": {
+                "ac": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "不屈战歌",
+              "desc": "额外攻击；伤害 +1。",
+              "effects": {
+                "extraAttack": 1,
+                "dmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "斩杀之歌",
+              "desc": "重击范围 19-20，伤害 +2。",
+              "effects": {
+                "critRange": 19,
+                "dmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "lore",
+          "name": "学识诗人",
+          "desc": "知识就是最锋利的咒文。",
+          "features": [
+            {
+              "level": 3,
+              "name": "附魔学识",
+              "desc": "法术 DC +1。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "切割咒文",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "万能学识",
+              "desc": "技能检定 +2，最大生命 +8。",
+              "effects": {
+                "skillBonus": 2,
+                "maxHp": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "druid",
+      "name": "德鲁伊",
+      "hitDie": 8,
+      "primary": "wis",
+      "secondary": "con",
+      "saveProfs": [
+        "wis",
+        "con"
+      ],
+      "armorProfs": [
+        "light",
+        "medium",
+        "shield"
+      ],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "arcana",
+          "animal_handling",
+          "insight",
+          "medicine",
+          "nature",
+          "perception",
+          "religion",
+          "survival"
+        ]
+      },
+      "subclassLevel": 2,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellList": [
+        "cleric"
+      ],
+      "spellcasting": {
+        "type": "full",
+        "ability": "wis",
+        "cantrips": 2,
+        "prepared": true
+      },
+      "startGold": 100,
+      "hitDiceCount": 8,
+      "blurb": "自然的喉舌。变形、治愈、呼唤风雨——你既是守护者也是风暴。",
+      "features": [
+        {
+          "level": 1,
+          "name": "德鲁伊法术",
+          "desc": "感知施法者，按感知准备法术。",
+          "effects": {}
+        },
+        {
+          "level": 1,
+          "name": "自然恢复",
+          "desc": "每局额外获得 1 次短休。",
+          "effects": {
+            "restShort": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "野性形态",
+          "desc": "每日数次变身为野兽（简化为：AC +1，伤害 +1）。",
+          "effects": {
+            "ac": 1,
+            "dmg": 1
+          }
+        },
+        {
+          "level": 4,
+          "name": "属性提升",
+          "desc": "两项属性各 +1（在升级界面分配）。",
+          "effects": {}
+        },
+        {
+          "level": 6,
+          "name": "元素抵抗",
+          "desc": "对火焰、冰霜、闪电伤害具有抗性。",
+          "effects": {
+            "resist": [
+              "火焰",
+              "冰霜",
+              "闪电"
+            ]
+          }
+        },
+        {
+          "level": 10,
+          "name": "至尊野性",
+          "desc": "最大生命 +10，法术强度 +1。",
+          "effects": {
+            "maxHp": 10,
+            "spellDmg": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "moon",
+          "name": "明月结社",
+          "desc": "化作最凶猛的野兽，硬抗成吨伤害。",
+          "features": [
+            {
+              "level": 2,
+              "name": "巨熊之躯",
+              "desc": "最大生命 +8，AC +1。",
+              "effects": {
+                "maxHp": 8,
+                "ac": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "元素野性",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            },
+            {
+              "level": 10,
+              "name": "远古之躯",
+              "desc": "伤害 +2，法术 DC +1。",
+              "effects": {
+                "dmg": 2,
+                "spellDc": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "land",
+          "name": "大地结社",
+          "desc": "与一方土地相连，法术更刁钻。",
+          "features": [
+            {
+              "level": 2,
+              "name": "自然之环",
+              "desc": "法术 DC +1。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "复生自然",
+              "desc": "每局额外获得 1 次短休。",
+              "effects": {
+                "restShort": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "自然主宰",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "artificer",
+      "name": "奥术工匠",
+      "hitDie": 8,
+      "primary": "int",
+      "secondary": "con",
+      "saveProfs": [
+        "int",
+        "con"
+      ],
+      "armorProfs": [
+        "light",
+        "medium"
+      ],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "arcana",
+          "history",
+          "investigation",
+          "medicine",
+          "nature",
+          "perception",
+          "sleight_of_hand"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellList": [
+        "wizard"
+      ],
+      "spellcasting": {
+        "type": "half",
+        "ability": "int",
+        "cantrips": 2,
+        "prepared": true
+      },
+      "startGold": 120,
+      "hitDiceCount": 8,
+      "blurb": "把魔法焊进钢铁。魔能武器与机械随从，是你最可靠的伙伴。",
+      "features": [
+        {
+          "level": 1,
+          "name": "奥术工匠法术",
+          "desc": "智力施法者（半环阶），准备法术。",
+          "effects": {}
+        },
+        {
+          "level": 1,
+          "name": "魔能充能",
+          "desc": "每局额外获得 1 次短休。",
+          "effects": {
+            "restShort": 1
+          }
+        },
+        {
+          "level": 3,
+          "name": "奥术复元",
+          "desc": "每局额外获得 1 次短休。",
+          "effects": {
+            "restShort": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "魔能武器",
+          "desc": "伤害 +1，命中 +1。",
+          "effects": {
+            "dmg": 1,
+            "hit": 1
+          }
+        },
+        {
+          "level": 8,
+          "name": "属性提升",
+          "desc": "两项属性各 +1（在升级界面分配）。",
+          "effects": {}
+        },
+        {
+          "level": 10,
+          "name": "法术枪",
+          "desc": "法术强度 +2，法术 DC +1。",
+          "effects": {
+            "spellDmg": 2,
+            "spellDc": 1
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "alchemist",
+          "name": "炼金术士",
+          "desc": "药剂与炸弹，治疗与毁灭只在一手之间。",
+          "features": [
+            {
+              "level": 3,
+              "name": "炼金精研",
+              "desc": "法术 DC +1。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "活化药剂",
+              "desc": "最大生命 +6。",
+              "effects": {
+                "maxHp": 6
+              }
+            },
+            {
+              "level": 10,
+              "name": "万能溶剂",
+              "desc": "法术强度 +2。",
+              "effects": {
+                "spellDmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "battlesmith",
+          "name": "战斗工匠",
+          "desc": "你的钢铁卫士替你挡刀，你负责输出。",
+          "features": [
+            {
+              "level": 3,
+              "name": "守卫核心",
+              "desc": "AC +1，伤害 +1。",
+              "effects": {
+                "ac": 1,
+                "dmg": 1
+              }
+            },
+            {
+              "level": 7,
+              "name": "重装核心",
+              "desc": "最大生命 +8，AC +1。",
+              "effects": {
+                "maxHp": 8,
+                "ac": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "超频核心",
+              "desc": "伤害 +2，命中 +1。",
+              "effects": {
+                "dmg": 2,
+                "hit": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warlock",
+      "name": "邪术师",
+      "hitDie": 8,
+      "primary": "cha",
+      "secondary": "con",
+      "saveProfs": [
+        "cha",
+        "wis"
+      ],
+      "armorProfs": [
+        "light"
+      ],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "arcana",
+          "deception",
+          "history",
+          "intimidation",
+          "investigation",
+          "nature",
+          "religion"
+        ]
+      },
+      "subclassLevel": 1,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellList": [
+        "wizard",
+        "cleric"
+      ],
+      "spellcasting": {
+        "type": "pact",
+        "ability": "cha",
+        "cantrips": 2,
+        "known": true,
+        "knownByLevel": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ]
+      },
+      "startGold": 100,
+      "hitDiceCount": 8,
+      "blurb": "你与异界存在签下契约。法术位少得可怜，却永远满环、短休即回。",
+      "features": [
+        {
+          "level": 1,
+          "name": "邪术师法术",
+          "desc": "魅力施法者（契约魔法：法术位少但皆为最高环，短休恢复）。",
+          "effects": {}
+        },
+        {
+          "level": 1,
+          "name": "邪能之触",
+          "desc": "法术 DC +1。",
+          "effects": {
+            "spellDc": 1
+          }
+        },
+        {
+          "level": 6,
+          "name": "复生契约",
+          "desc": "每局额外获得 1 次短休。",
+          "effects": {
+            "restShort": 1
+          }
+        },
+        {
+          "level": 10,
+          "name": "契约主宰",
+          "desc": "法术强度 +2。",
+          "effects": {
+            "spellDmg": 2
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "fiend",
+          "name": "魔鬼之契",
+          "desc": "来自九狱的烈焰，烧穿一切阻挡。",
+          "features": [
+            {
+              "level": 1,
+              "name": "黑暗祝福",
+              "desc": "伤害 +1。",
+              "effects": {
+                "dmg": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "烈焰仆从",
+              "desc": "法术强度 +1。",
+              "effects": {
+                "spellDmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "地狱之主",
+              "desc": "法术 DC +1，伤害 +1。",
+              "effects": {
+                "spellDc": 1,
+                "dmg": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "greatold",
+          "name": "旧日之契",
+          "desc": "深渊低语赋予你侵蚀心智的力量。",
+          "features": [
+            {
+              "level": 1,
+              "name": "异界学识",
+              "desc": "法术 DC +1。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "心灵侵蚀",
+              "desc": "法术强度 +1。",
+              "effects": {
+                "spellDmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "深渊低语",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "barbarian",
+      "name": "野蛮人",
+      "hitDie": 12,
+      "primary": "str",
+      "secondary": "con",
+      "saveProfs": [
+        "str",
+        "con"
+      ],
+      "armorProfs": [
+        "light"
+      ],
+      "weaponProfs": [
+        "simple",
+        "martial"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "animal_handling",
+          "athletics",
+          "intimidation",
+          "nature",
+          "perception",
+          "survival"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": null,
+      "startGold": 80,
+      "hitDiceCount": 12,
+      "blurb": "愤怒是你的武器。狂暴起来，刀剑砍在你身上像挠痒。",
+      "features": [
+        {
+          "level": 1,
+          "name": "狂暴",
+          "desc": "附赠动作开启：本场战斗伤害减免、伤害提升、重击额外骰。",
+          "effects": {
+            "rage": 1,
+            "rageDr": 3,
+            "rageDmg": 2,
+            "savageAttacks": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "无畏",
+          "desc": "对恐惧免疫。",
+          "effects": {
+            "fearImmune": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "鲁莽攻击",
+          "desc": "伤害 +1。",
+          "effects": {
+            "dmg": 1
+          }
+        },
+        {
+          "level": 5,
+          "name": "额外攻击",
+          "desc": "使用攻击动作时攻击两次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 7,
+          "name": "凶蛮体魄",
+          "desc": "最大生命 +10。",
+          "effects": {
+            "maxHp": 10
+          }
+        },
+        {
+          "level": 9,
+          "name": "凶蛮恢复",
+          "desc": "伤害 +2。",
+          "effects": {
+            "dmg": 2
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "berserker",
+          "name": "狂战士",
+          "desc": "把狂怒推向极致，越打越疯。",
+          "features": [
+            {
+              "level": 3,
+              "name": "狂乱",
+              "desc": "伤害 +1。",
+              "effects": {
+                "dmg": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "猛击",
+              "desc": "重击范围 19-20。",
+              "effects": {
+                "critRange": 19
+              }
+            },
+            {
+              "level": 10,
+              "name": "无情狂怒",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "totem",
+          "name": "图腾勇士",
+          "desc": "先祖之灵附身，给你野兽般的坚韧。",
+          "features": [
+            {
+              "level": 3,
+              "name": "熊之图腾",
+              "desc": "狂暴时伤害减免再 +2。",
+              "effects": {
+                "rageDr": 2
+              }
+            },
+            {
+              "level": 6,
+              "name": "鹰之图腾",
+              "desc": "最大生命 +8。",
+              "effects": {
+                "maxHp": 8
+              }
+            },
+            {
+              "level": 10,
+              "name": "狼之图腾",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "zealot",
+          "name": "狂信者",
+          "desc": "神祇的怒火，让你在濒死中依然凶猛。",
+          "features": [
+            {
+              "level": 3,
+              "name": "神怒",
+              "desc": "伤害 +1。",
+              "effects": {
+                "dmg": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "魂火",
+              "desc": "法术 DC +1（兼施法时生效）。",
+              "effects": {
+                "spellDc": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "不灭信仰",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "monk",
+      "name": "武僧",
+      "hitDie": 8,
+      "primary": "dex",
+      "secondary": "wis",
+      "saveProfs": [
+        "str",
+        "dex"
+      ],
+      "armorProfs": [],
+      "weaponProfs": [
+        "simple"
+      ],
+      "skillChoices": {
+        "count": 2,
+        "from": [
+          "acrobatics",
+          "athletics",
+          "history",
+          "insight",
+          "religion",
+          "stealth"
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [
+        4,
+        8
+      ],
+      "spellcasting": null,
+      "startGold": 50,
+      "hitDiceCount": 8,
+      "blurb": "拳脚即是法器。气在体内流转，一拳击穿护甲，一掌定住心神。",
+      "features": [
+        {
+          "level": 1,
+          "name": "徒手打击",
+          "desc": "徒手攻击伤害提升；不穿护甲时以敏捷与感知加值计算 AC。",
+          "effects": {
+            "monkDmg": 3,
+            "acWis": 1
+          }
+        },
+        {
+          "level": 1,
+          "name": "气",
+          "desc": "获得气点（每级 + 感知调整值），用于疾风连击与震慑拳。",
+          "effects": {
+            "ki": 1
+          }
+        },
+        {
+          "level": 2,
+          "name": "疾风步",
+          "desc": "闪避与撤离更灵活（简化为：先攻 +2）。",
+          "effects": {
+            "initBonus": 2
+          }
+        },
+        {
+          "level": 5,
+          "name": "额外攻击",
+          "desc": "使用攻击动作时攻击两次。",
+          "effects": {
+            "extraAttack": 1
+          }
+        },
+        {
+          "level": 7,
+          "name": "灵巧身法",
+          "desc": "AC +1，伤害 +1。",
+          "effects": {
+            "ac": 1,
+            "dmg": 1
+          }
+        },
+        {
+          "level": 10,
+          "name": "宗师之力",
+          "desc": "最大生命 +8，伤害 +2。",
+          "effects": {
+            "maxHp": 8,
+            "dmg": 2
+          }
+        }
+      ],
+      "subclasses": [
+        {
+          "id": "openhand",
+          "name": "散打宗师",
+          "desc": "赤手空拳即是毁灭本身。",
+          "features": [
+            {
+              "level": 3,
+              "name": "疾风连击",
+              "desc": "获得「疾风连击」气技（附赠动作，1 气：额外徒手攻击）。",
+              "effects": {
+                "flurry": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "开掌",
+              "desc": "伤害 +1。",
+              "effects": {
+                "dmg": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "四两拨千斤",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "shadow",
+          "name": "暗影宗师",
+          "desc": "踏影而行，从黑暗中出击。",
+          "features": [
+            {
+              "level": 3,
+              "name": "震慑拳",
+              "desc": "获得「震慑拳」气技（附赠动作，1 气：攻击并使目标震慑）。",
+              "effects": {
+                "stun": 1
+              }
+            },
+            {
+              "level": 6,
+              "name": "影袭",
+              "desc": "伤害 +1，命中 +1。",
+              "effects": {
+                "dmg": 1,
+                "hit": 1
+              }
+            },
+            {
+              "level": 10,
+              "name": "暗影主宰",
+              "desc": "伤害 +2。",
+              "effects": {
+                "dmg": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

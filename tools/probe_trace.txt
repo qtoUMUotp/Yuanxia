@@ -1,0 +1,158 @@
+SEED=6
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+#1 levelup style
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+#2 levelup.done
+  ⟪save START⟫
+  ⟪save END⟫
+#3 map → act node:battle
+  ⟪save START⟫
+  ⟪save END⟫
+#4 battle move 
+#5 battle endTurn 
+#6 battle attack tgt=e2 
+#7 battle move 
+#8 battle endTurn 
+#9 battle attack tgt=e1 
+#10 battle endTurn 
+#11 battle attack tgt=e1 
+#12 battle.over → b:continue
+  ⟪finishBattle START⟫
+  ⟪gainXp START⟫
+  ⟪gainXp END⟫
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+  ⟪finishBattle END⟫
+#13 map → act node:shop
+  ⟪save START⟫
+  ⟪save END⟫
+#14 buy s5
+  ⟪grantItem START⟫
+  ⟪grantItem END⟫
+#14 shop:leave
+  ⟪save START⟫
+  ⟪save END⟫
+#15 map → act node:rest
+  ⟪save START⟫
+  ⟪save END⟫
+#16 rest short
+  ⟪save START⟫
+  ⟪save END⟫
+#17 rest none
+  ⟪save START⟫
+  ⟪save END⟫
+#18 map → act node:battle
+  ⟪save START⟫
+  ⟪save END⟫
+#19 battle move 
+#20 battle attack tgt=e12 
+#21 battle endTurn 
+#22 battle attack tgt=e11 
+#23 battle endTurn 
+#24 battle attack tgt=e11 
+#25 battle.over → b:continue
+  ⟪finishBattle START⟫
+  ⟪gainXp START⟫
+  ⟪gainXp END⟫
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+  ⟪finishBattle END⟫
+#26 levelup subclass
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+#27 levelup.done
+  ⟪save START⟫
+  ⟪save END⟫
+#28 map → act node:battle
+  ⟪save START⟫
+  ⟪save END⟫
+#29 battle move 
+#30 battle attack tgt=e13 
+#31 battle endTurn 
+#32 battle attack tgt=e13 
+#33 battle.over → b:continue
+  ⟪finishBattle START⟫
+  ⟪gainXp START⟫
+  ⟪gainXp END⟫
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+  ⟪finishBattle END⟫
+#34 map → act node:boss
+  ⟪save START⟫
+  ⟪save END⟫
+#35 battle move 
+#36 battle endTurn 
+#37 battle move 
+#38 battle attack tgt=e14 
+#39 battle endTurn 
+#40 battle attack tgt=e14 
+#41 battle endTurn 
+#42 battle attack tgt=e14 
+#43 battle endTurn 
+#44 battle attack tgt=e14 
+#45 battle.over → b:continue
+  ⟪finishBattle START⟫
+  ⟪loot START⟫
+  ⟪loot END⟫
+  ⟪grantItem START⟫
+  ⟪grantItem END⟫
+  ⟪loot START⟫
+  ⟪loot END⟫
+  ⟪grantItem START⟫
+  ⟪grantItem END⟫
+  ⟪gainXp START⟫
+  ⟪gainXp END⟫
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+  ⟪finishBattle END⟫
+#46 levelup asi
+  ⟪checkChoices START⟫
+  ⟪checkChoices END⟫
+  ⟪save START⟫
+  ⟪save END⟫
+#47 levelup.done
+  ⟪save START⟫
+  ⟪save END⟫
+#48 map → act node:battle
+  ⟪save START⟫
+  ⟪save END⟫
+#49 battle move 
+#50 battle attack tgt=e16 
+#51 battle endTurn 
+#52 battle attack tgt=e16 
+#53 battle endTurn 
+#54 battle attack tgt=e16 
+#55 battle endTurn 
+#56 battle item 
+#57 battle endTurn 
+#58 battle item 
+#59 battle bonus 
+#60 battle endTurn 
+#61 battle attack tgt=e16 
+#62 battle endTurn 
+#63 battle attack tgt=e16 
+#64 battle endTurn 
+#65 battle.over → b:continue
+  ⟪finishBattle START⟫
+  ⟪finishBattle END⟫
+  ⟪settle START⟫
+  ⟪syncFromRun START⟫
+  ⟪syncFromRun END⟫
+  ⟪addRecord START⟫
+  ⟪addRecord END⟫
+  ⟪settle END⟫
+DONE guard=65 screen=over seen={"levelup":6,"map":7,"battle":49,"shop":1,"rest":2}

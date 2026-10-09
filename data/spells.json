@@ -1,0 +1,837 @@
+{
+  "spells": [
+    {
+      "id": "fire_bolt",
+      "name": "火焰箭",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": false,
+      "kind": "spell_attack",
+      "dice": "1d10",
+      "dmgType": "火焰",
+      "desc": "一粒火种从你指尖弹出，在半空炸开直扑目标胸口。命中则造成 1d10 火焰伤害，点燃它的衣角。",
+      "upcast": null,
+      "addMain": true
+    },
+    {
+      "id": "ray_of_frost",
+      "name": "冷冻射线",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "60 尺",
+      "concentration": false,
+      "kind": "spell_attack",
+      "dice": "1d8",
+      "dmgType": "冰霜",
+      "desc": "一道惨白的霜线擦过空气，沿途落下细碎冰晶。命中造成 1d8 冰霜伤害，冻得它关节发僵。",
+      "upcast": null,
+      "addMain": true
+    },
+    {
+      "id": "shocking_grasp",
+      "name": "电爪",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "接触",
+      "concentration": false,
+      "kind": "spell_attack",
+      "dice": "1d8",
+      "dmgType": "闪电",
+      "desc": "你伸手扣住它的手腕，蓝白电弧顺着甲片窜进骨缝。命中造成 1d8 闪电伤害，它的手指抽了一下。",
+      "upcast": null,
+      "addMain": true
+    },
+    {
+      "id": "poison_spray",
+      "name": "毒气喷溅",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "咒法",
+      "action": "动作",
+      "range": "30 尺",
+      "concentration": false,
+      "kind": "save",
+      "save": "con",
+      "half": false,
+      "dice": "1d12",
+      "dmgType": "毒素",
+      "desc": "你抬手泼出一蓬浊绿的毒雾，罩住它的口鼻。体质豁免失败者咳着受 1d12 毒素伤害。",
+      "upcast": null,
+      "addMain": true
+    },
+    {
+      "id": "sacred_flame",
+      "name": "圣火",
+      "level": 0,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "60 尺",
+      "concentration": false,
+      "kind": "save",
+      "save": "dex",
+      "half": false,
+      "dice": "1d8",
+      "dmgType": "光耀",
+      "desc": "火焰般的圣光自它头顶垂落，像一盏烧穿皮肉的灯。敏捷豁免失败则受 1d8 光耀伤害。",
+      "upcast": null,
+      "addMain": true
+    },
+    {
+      "id": "guidance",
+      "name": "神导术",
+      "level": 0,
+      "classes": [
+        "cleric"
+      ],
+      "school": "预言",
+      "action": "动作",
+      "range": "接触",
+      "concentration": true,
+      "kind": "buff",
+      "mods": {
+        "skillCheck": 1
+      },
+      "desc": "你按住同伴的手背低声祷告，指尖透出一点微光，接下来的一次属性检定获得 +1d4 加值。",
+      "upcast": null
+    },
+    {
+      "id": "blade_ward",
+      "name": "剑刃防护",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "防护",
+      "action": "动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 1,
+      "mods": {
+        "dr": 4
+      },
+      "desc": "你在身前划出一道半透明的力场弧线，硬接下劈来的锋刃。1 回合内挥砍、穿刺与钝击伤害减半。",
+      "upcast": null
+    },
+    {
+      "id": "true_strike",
+      "name": "真实打击",
+      "level": 0,
+      "classes": [
+        "wizard"
+      ],
+      "school": "预言",
+      "action": "动作",
+      "range": "30 尺",
+      "concentration": true,
+      "kind": "buff",
+      "nextAttackAdvantage": true,
+      "desc": "你借一缕预兆看清它下一步的走位，肩膀提前转了半寸，你的下一次攻击检定具有优势。",
+      "upcast": null
+    },
+    {
+      "id": "magic_missile",
+      "name": "魔法飞弹",
+      "level": 1,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": false,
+      "kind": "auto",
+      "dice": "1d4+1",
+      "darts": 3,
+      "dmgType": "力场",
+      "desc": "三枚发亮的力场飞弹从掌心窜出，绕过掩体逐颗砸在它身上，每枚造成 1d4+1 力场伤害。",
+      "upcast": {
+        "per": "dart"
+      }
+    },
+    {
+      "id": "burning_hands",
+      "name": "燃烧之手",
+      "level": 1,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "自身",
+      "concentration": false,
+      "kind": "save",
+      "targets": "all",
+      "save": "dex",
+      "half": true,
+      "dice": "3d6",
+      "dmgType": "火焰",
+      "desc": "你十指张开、拇指相扣，一道扇形烈焰贴着地面喷出去，把面前的一切燎得蜷起来。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "shield",
+      "name": "护盾",
+      "level": 1,
+      "classes": [
+        "wizard"
+      ],
+      "school": "防护",
+      "action": "反应",
+      "range": "自身",
+      "concentration": false,
+      "kind": "buff",
+      "turns": 1,
+      "mods": {
+        "ac": 5
+      },
+      "desc": "箭矢射到眼前的一瞬，你抬手撑起一面力场圆盘。AC +5，持续到你下个回合开始。",
+      "upcast": null
+    },
+    {
+      "id": "mage_armor",
+      "name": "法师护甲",
+      "level": 1,
+      "classes": [
+        "wizard"
+      ],
+      "school": "防护",
+      "action": "动作",
+      "range": "接触",
+      "concentration": false,
+      "kind": "buff",
+      "acSet": {
+        "base": 13,
+        "addDex": true
+      },
+      "desc": "你以指尖在空气里织出一层看不见的力场薄甲，贴住皮肤。AC 变为 13 + 敏捷调整值，直到战斗结束。",
+      "upcast": null
+    },
+    {
+      "id": "thunderwave",
+      "name": "雷霆波",
+      "level": 1,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "自身",
+      "concentration": false,
+      "kind": "save",
+      "targets": "all",
+      "save": "con",
+      "half": true,
+      "dice": "2d8",
+      "dmgType": "雷鸣",
+      "desc": "你猛地推出双掌，一圈轰响的力场冲击从身边炸开，把近身的敌人连同碎石一起掀翻。",
+      "upcast": {
+        "per": "1d8"
+      }
+    },
+    {
+      "id": "healing_word",
+      "name": "治疗真言",
+      "level": 1,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "附赠动作",
+      "range": "60 尺",
+      "concentration": false,
+      "kind": "heal",
+      "dice": "1d4",
+      "addMain": true,
+      "desc": "你吐出一个短促的圣词，微光落在它的伤口上，裂开的血肉自己合拢起来。",
+      "upcast": {
+        "per": "1d4"
+      }
+    },
+    {
+      "id": "cure_wounds",
+      "name": "治疗术",
+      "level": 1,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "接触",
+      "concentration": false,
+      "kind": "heal",
+      "dice": "1d8",
+      "addMain": true,
+      "desc": "你把手掌按在伤口上，暖意顺着指缝渗进去，撕裂的皮肉一寸一寸长了回来。",
+      "upcast": {
+        "per": "1d8"
+      }
+    },
+    {
+      "id": "bless",
+      "name": "祝福术",
+      "level": 1,
+      "classes": [
+        "cleric"
+      ],
+      "school": "附魔",
+      "action": "动作",
+      "range": "30 尺",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 3,
+      "mods": {
+        "hit": 2,
+        "saveBonus": 2
+      },
+      "desc": "你举起圣徽念诵，金光落在武器与肩甲上。3 回合内攻击检定与豁免获得 +1d4 的祝福。",
+      "upcast": null
+    },
+    {
+      "id": "guiding_bolt",
+      "name": "引导箭",
+      "level": 1,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": false,
+      "kind": "spell_attack",
+      "dice": "4d6",
+      "dmgType": "光耀",
+      "nextAttackAdvantage": true,
+      "desc": "一支燃烧的圣光箭钉进它的肩窝，留下刺目的光斑，你下一次攻击检定因此具有优势。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "shield_of_faith",
+      "name": "虔诚护盾",
+      "level": 1,
+      "classes": [
+        "cleric"
+      ],
+      "school": "防护",
+      "action": "附赠动作",
+      "range": "60 尺",
+      "concentration": true,
+      "kind": "buff",
+      "mods": {
+        "ac": 2
+      },
+      "desc": "你画出一个闪光的盾形符文，它悬在你身侧随攻击转向格挡。AC +2，直到战斗结束。",
+      "upcast": null
+    },
+    {
+      "id": "divine_favor",
+      "name": "神恩",
+      "level": 1,
+      "classes": [
+        "paladin"
+      ],
+      "school": "塑能",
+      "action": "附赠动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 3,
+      "mods": {
+        "dmg": 2
+      },
+      "desc": "你把誓言低声压在剑柄上，刃口泛起一层白金色的光，每一击都多带 2 点灼人的神圣伤害。",
+      "upcast": null
+    },
+    {
+      "id": "thunderous_smite",
+      "name": "雷鸣斩",
+      "level": 1,
+      "classes": [
+        "paladin"
+      ],
+      "school": "塑能",
+      "action": "附赠动作",
+      "range": "自身",
+      "concentration": false,
+      "kind": "buff",
+      "bonusDamageNext": {
+        "dice": "2d6",
+        "type": "雷鸣",
+        "cond": {
+          "id": "prone",
+          "name": "倒地",
+          "turns": 1
+        }
+      },
+      "desc": "你举剑引雷，刃上炸开一圈闷响。下一次命中额外造成 2d6 雷鸣伤害，并把它震倒在地。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "hunter_mark",
+      "name": "猎人印记",
+      "level": 1,
+      "classes": [
+        "ranger"
+      ],
+      "school": "预言",
+      "action": "附赠动作",
+      "range": "90 尺",
+      "concentration": true,
+      "kind": "buff",
+      "mark": {
+        "dice": "1d6",
+        "type": "挥砍"
+      },
+      "desc": "你盯住它喉下的那处弱点，把这份注视变成印记。此后每次命中它，都额外造成 1d6 挥砍伤害。",
+      "upcast": null
+    },
+    {
+      "id": "ensnaring_strike",
+      "name": "荆棘之击",
+      "level": 1,
+      "classes": [
+        "ranger"
+      ],
+      "school": "咒法",
+      "action": "附赠动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "buff",
+      "bonusDamageNext": {
+        "dice": "1d6",
+        "type": "穿刺",
+        "cond": {
+          "id": "restrained",
+          "name": "束缚",
+          "turns": 2
+        }
+      },
+      "desc": "带刺的藤蔓顺着弓弦缠上箭身。下一次命中额外造成 1d6 穿刺伤害，并把目标缠在原地 2 回合。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "scorching_ray",
+      "name": "灼热射线",
+      "level": 2,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": false,
+      "kind": "spell_attack",
+      "dice": "2d6",
+      "darts": 3,
+      "dmgType": "火焰",
+      "desc": "你并指射出三道赤红射线，一道追着一道钉过去，每道命中造成 2d6 火焰伤害。",
+      "upcast": {
+        "per": "dart"
+      }
+    },
+    {
+      "id": "mirror_image",
+      "name": "镜影术",
+      "level": 2,
+      "classes": [
+        "wizard"
+      ],
+      "school": "幻术",
+      "action": "动作",
+      "range": "自身",
+      "concentration": false,
+      "kind": "buff",
+      "mirror": 3,
+      "desc": "你身边裂出三个与你动作分毫不差的残影，敌人分不清哪个是真的，被命中时消耗一层镜像。",
+      "upcast": null
+    },
+    {
+      "id": "blur",
+      "name": "朦胧术",
+      "level": 2,
+      "classes": [
+        "wizard"
+      ],
+      "school": "幻术",
+      "action": "动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 3,
+      "disadvantageAgainst": true,
+      "desc": "你的轮廓像被水浸过的墨迹一样晃动，敌人怎么也瞄不准，攻击你的检定具有劣势。",
+      "upcast": null
+    },
+    {
+      "id": "web",
+      "name": "蛛网术",
+      "level": 2,
+      "classes": [
+        "wizard"
+      ],
+      "school": "咒法",
+      "action": "动作",
+      "range": "60 尺",
+      "concentration": true,
+      "kind": "debuff",
+      "targets": "all",
+      "save": "dex",
+      "cond": {
+        "id": "restrained",
+        "name": "束缚",
+        "turns": 2
+      },
+      "desc": "黏稠的蛛网从地面与墙壁之间骤然拉开。敏捷豁免失败者被缠住，2 回合内动弹不得。",
+      "upcast": null
+    },
+    {
+      "id": "hold_person",
+      "name": "定身人类",
+      "level": 2,
+      "classes": [
+        "wizard",
+        "cleric"
+      ],
+      "school": "附魔",
+      "action": "动作",
+      "range": "60 尺",
+      "concentration": true,
+      "kind": "debuff",
+      "save": "wis",
+      "cond": {
+        "id": "stunned",
+        "name": "眩晕",
+        "turns": 2
+      },
+      "desc": "你吐出一个短促的音节锁住它的关节。它的四肢僵在半空，只有眼珠还在惊惶地转。",
+      "upcast": null
+    },
+    {
+      "id": "shadow_blade",
+      "name": "幽影刃",
+      "level": 2,
+      "classes": [
+        "wizard"
+      ],
+      "school": "幻术",
+      "action": "附赠动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "spell_attack",
+      "dice": "2d8",
+      "dmgType": "心灵",
+      "desc": "你从自己的影子里抽出一柄凝实的黑刃，挥出时无声无息，命中造成 2d8 心灵伤害。",
+      "upcast": {
+        "per": "1d8"
+      }
+    },
+    {
+      "id": "spiritual_weapon",
+      "name": "灵能武器",
+      "level": 2,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "附赠动作",
+      "range": "60 尺",
+      "concentration": false,
+      "kind": "buff",
+      "recurring": {
+        "dice": "1d8",
+        "type": "力场"
+      },
+      "desc": "一把浮空的力场战锤在你身侧成形，你每回合开始时它便自行挥下，造成 1d8 力场伤害。",
+      "upcast": {
+        "per": "1d8"
+      }
+    },
+    {
+      "id": "lesser_restoration",
+      "name": "次级复原",
+      "level": 2,
+      "classes": [
+        "cleric"
+      ],
+      "school": "防护",
+      "action": "动作",
+      "range": "接触",
+      "concentration": false,
+      "kind": "buff",
+      "cleanse": true,
+      "desc": "你按住自己的额头低声祷告，毒素、麻痹与昏沉顺着指尖被抽走，负面状态尽数解除。",
+      "upcast": null
+    },
+    {
+      "id": "aid",
+      "name": "援助",
+      "level": 2,
+      "classes": [
+        "paladin",
+        "cleric"
+      ],
+      "school": "防护",
+      "action": "动作",
+      "range": "30 尺",
+      "concentration": false,
+      "kind": "buff",
+      "tempHp": 10,
+      "desc": "你以圣言为自己撑起一层无形的护持，呼吸一沉，额外获得 10 点临时生命。",
+      "upcast": {
+        "per": "tempHp:5"
+      }
+    },
+    {
+      "id": "fireball",
+      "name": "火球术",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "150 尺",
+      "concentration": false,
+      "kind": "save",
+      "targets": "all",
+      "save": "dex",
+      "half": true,
+      "dice": "8d6",
+      "dmgType": "火焰",
+      "desc": "一粒豌豆大的红点从你指尖飞出，在敌群正中轰然炸成一人高的火球，热浪掀得碎石乱飞。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "lightning_bolt",
+      "name": "闪电束",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "塑能",
+      "action": "动作",
+      "range": "100 尺",
+      "concentration": false,
+      "kind": "save",
+      "save": "dex",
+      "half": true,
+      "dice": "8d6",
+      "dmgType": "闪电",
+      "desc": "你抬手劈出一道炽白的电流，它笔直贯穿整条走廊，空气里留下一股焦灼的金属味。",
+      "upcast": {
+        "per": "1d6"
+      }
+    },
+    {
+      "id": "haste",
+      "name": "加速术",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "变化",
+      "action": "动作",
+      "range": "30 尺",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 3,
+      "extraAttack": 1,
+      "mods": {
+        "ac": 2
+      },
+      "desc": "你捏碎一颗裹着蜂翼的琥珀，目标的时间被拧快一档：每回合多一次攻击，AC +2。",
+      "upcast": null
+    },
+    {
+      "id": "fly",
+      "name": "飞行",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "变化",
+      "action": "动作",
+      "range": "接触",
+      "concentration": true,
+      "kind": "buff",
+      "flight": true,
+      "desc": "你碰一下自己的肩，脚下便涌起一股托举的风。你获得飞行，地面上的束缚再拉不住你。",
+      "upcast": null
+    },
+    {
+      "id": "dispel_magic",
+      "name": "解除魔法",
+      "level": 3,
+      "classes": [
+        "wizard",
+        "cleric"
+      ],
+      "school": "防护",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": false,
+      "kind": "utility",
+      "desc": "你挥手撕开对方身上的法术纹路，它的增益随之熄灭；你自己身上的负面状态也被一并剥落。",
+      "upcast": null
+    },
+    {
+      "id": "hypnotic_pattern",
+      "name": "催眠图纹",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "幻术",
+      "action": "动作",
+      "range": "120 尺",
+      "concentration": true,
+      "kind": "debuff",
+      "targets": "all",
+      "save": "wis",
+      "cond": {
+        "id": "stunned",
+        "name": "眩晕",
+        "turns": 2
+      },
+      "desc": "你在空中铺开一片缓缓旋转的彩色纹路，看进去的敌人眼神涣散，僵在原地无法行动。",
+      "upcast": null
+    },
+    {
+      "id": "spirit_guardians",
+      "name": "魂灵卫士",
+      "level": 3,
+      "classes": [
+        "cleric"
+      ],
+      "school": "咒法",
+      "action": "动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "buff",
+      "turns": 3,
+      "aura": {
+        "dice": "3d8",
+        "type": "光耀",
+        "save": "wis",
+        "half": true
+      },
+      "desc": "一圈半透明的圣灵绕着你旋转，扑咬每一个靠近的敌人。你每回合开始时对全体敌人结算一次。",
+      "upcast": null
+    },
+    {
+      "id": "mass_healing_word",
+      "name": "群体治疗真言",
+      "level": 3,
+      "classes": [
+        "cleric"
+      ],
+      "school": "塑能",
+      "action": "附赠动作",
+      "range": "60 尺",
+      "concentration": false,
+      "kind": "heal",
+      "dice": "2d4",
+      "addMain": true,
+      "desc": "一句真言在空气中荡开，温热的圣光同时漫过你身上每一道伤口，把它们一并熨平。",
+      "upcast": {
+        "per": "1d4"
+      }
+    },
+    {
+      "id": "fear",
+      "name": "恐惧",
+      "level": 3,
+      "classes": [
+        "wizard"
+      ],
+      "school": "幻术",
+      "action": "动作",
+      "range": "自身",
+      "concentration": true,
+      "kind": "debuff",
+      "targets": "all",
+      "save": "wis",
+      "cond": {
+        "id": "frightened",
+        "name": "恐惧",
+        "turns": 2
+      },
+      "desc": "你勾勒出它最怕的那一幕，幻象顺着目光扎进去。它丢下武器转身就逃，攻击也变得犹豫。",
+      "upcast": null
+    },
+    {
+      "id": "hail_of_thorns",
+      "name": "荆棘丛生",
+      "level": 1,
+      "classes": [
+        "ranger"
+      ],
+      "kind": "save",
+      "save": "dex",
+      "dice": "1d10",
+      "dmgType": "穿刺",
+      "targets": "single",
+      "half": true,
+      "desc": "召唤一片荆棘扣住目标（敏捷豁免，1d10 穿刺，成功减半）。"
+    },
+    {
+      "id": "cure_wounds_r",
+      "name": "野地缝合",
+      "level": 1,
+      "classes": [
+        "ranger"
+      ],
+      "kind": "heal",
+      "dice": "1d8",
+      "addMain": true,
+      "desc": "用草药与树脂缝合伤口，回复 1d8 + 感知调整值。"
+    },
+    {
+      "id": "pass_without_trace",
+      "name": "无踪步",
+      "level": 2,
+      "classes": [
+        "ranger"
+      ],
+      "kind": "buff",
+      "targets": "self",
+      "buff": {
+        "name": "无踪步",
+        "turns": 99,
+        "mods": {
+          "ac": 1,
+          "hit": 1
+        }
+      },
+      "desc": "脚步与气味一起消失：AC +1、命中 +1，直到战斗结束。"
+    }
+  ]
+}

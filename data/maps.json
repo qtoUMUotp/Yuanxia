@@ -1,0 +1,100 @@
+{
+  "_note": "三幕配置、节点生成、战斗平衡总表。怪物表写的是相对强度，实际战斗长度由 balance 控制。",
+  "acts": [
+    {
+      "id": 1,
+      "name": "第一幕 · 苔沼林地",
+      "theme": "妖精与野兽",
+      "layers": 5,
+      "flavor": "树干上长着一层会呼吸的青苔。你踩下去的时候，它在你的靴底轻轻地吸了一口气。",
+      "pool": ["goblin_cutter", "bog_wolf", "web_spider", "treant_sapling", "harpy_scavenger", "giant_bog_spider"],
+      "elites": ["worg_alpha", "bog_green_hag"],
+      "boss": "spider_queen_priestess",
+      "bossName": "蛛后祭司"
+    },
+    {
+      "id": 2,
+      "name": "第二幕 · 沉没矿坑",
+      "theme": "亡灵与异怪",
+      "layers": 6,
+      "flavor": "积水到膝盖。水面浮着一层铁锈色的膜，你每走一步，那层膜就裂开一次，再慢慢合上。",
+      "pool": ["skeleton_miner", "ghoul_gnawer", "drowned_specter", "mine_gargoyle", "goblin_shaman", "rust_construct"],
+      "elites": ["ogre_foreman", "crypt_stitcher"],
+      "boss": "mine_lich_lord",
+      "bossName": "矿坑亡灵领主"
+    },
+    {
+      "id": 3,
+      "name": "第三幕 · 黑曜圣所",
+      "theme": "邪教与邪魔",
+      "layers": 7,
+      "flavor": "墙壁是整块黑曜石磨出来的，冷得能看见自己呼出的白气。空气里有铁和香灰的味道。",
+      "pool": ["obsidian_cultist", "hell_hound", "obsidian_zealot", "devouring_shadow", "bone_devil", "obsidian_imp"],
+      "elites": ["obsidian_succubus", "obsidian_stone_golem"],
+      "boss": "obsidian_high_priest",
+      "bossName": "黑曜大祭司"
+    }
+  ],
+  "nodeWeights": {
+    "battle": 44,
+    "elite": 15,
+    "event": 16,
+    "shop": 7,
+    "rest": 16,
+    "treasure": 4
+  },
+  "nodeMeta": {
+    "battle": { "name": "战斗", "icon": "⚔", "color": "#c9c2b0", "desc": "普通敌人。经验、金币、普通装备。" },
+    "elite": { "name": "精英", "icon": "☠", "color": "#e0764f", "desc": "强敌。大量经验与高品质战利品。" },
+    "event": { "name": "事件", "icon": "?", "color": "#a58ad6", "desc": "抉择。技能检定、陷阱、遭遇、交易。" },
+    "shop": { "name": "商店", "icon": "¤", "color": "#d9a441", "desc": "用金币购买装备、药剂与卷轴。" },
+    "rest": { "name": "营地", "icon": "✚", "color": "#7fd0a0", "desc": "安全的落脚点。你可以决定短休、长休，或者什么都不做继续前进。" },
+    "treasure": { "name": "宝库", "icon": "★", "color": "#6fb3e0", "desc": "上锁的箱子或祭品堆。可能有魔法物品。" },
+    "boss": { "name": "关底", "icon": "☠☠", "color": "#d94f4f", "desc": "幕末 Boss。顶级战利品与大量经验。" }
+  },
+  "generation": {
+    "nodesPerLayer": [2, 3],
+    "entryNodes": 1,
+    "guarantee": { "shop": 1, "rest": 2, "event": 1, "elite": 1 },
+    "firstLayerForce": "battle",
+    "lastLayerForce": "boss",
+    "visibleLayers": 3
+  },
+  "encounterRules": {
+    "normal": { "secondChance": 0.28 },
+    "elite": { "addNormalChance": 0.25 }
+  },
+  "_balanceNote": "每幕 × 档位的战斗强度调节。怪物表按 4 人小队基准写，本作是单人，所以必须整体下调；精英与 Boss 下调得更狠，否则它们会多打 3~5 倍的回合。目标：普通战 2~4 回合、精英 4~6 回合、关底 6~9 回合；普通战消耗 8%~15% 最大生命，精英 25%~40%，关底 50%~70%。",
+  "balance": {
+    "1": {
+      "normal": { "hp": 0.46, "dmg": 1.15, "ac": -1, "hit": -1 },
+      "elite": { "hp": 0.2, "dmg": 0.8, "ac": -1, "hit": -2 },
+      "boss": { "hp": 0.22, "dmg": 0.68, "ac": -2, "hit": -2 }
+    },
+    "2": {
+      "normal": { "hp": 0.52, "dmg": 1.28, "ac": -1, "hit": -1 },
+      "elite": { "hp": 0.26, "dmg": 0.97, "ac": -2, "hit": -2 },
+      "boss": { "hp": 0.28, "dmg": 0.84, "ac": -2, "hit": -2 }
+    },
+    "3": {
+      "normal": { "hp": 0.56, "dmg": 1.35, "ac": -1, "hit": -1 },
+      "elite": { "hp": 0.3, "dmg": 1.05, "ac": -2, "hit": -2 },
+      "boss": { "hp": 0.32, "dmg": 0.92, "ac": -3, "hit": -2 }
+    }
+  },
+  "playerHpMul": 1.0,
+  "playerHpFlat": 6,
+  "_hpNote": "playerHpMul/playerHpFlat 只做微调；本作刻意贴近 5e 的真实血线（9 级战士约 74 HP），战斗压力靠怪物数值与休息配额控制，不靠放大血池。",
+  "restDefaults": { "short": 3, "long": 1 },
+  "restRecovery": { "shortMp": 0, "longHealPct": 1.0 },
+  "shopSize": { "items": 3, "consumables": 3, "services": 2 },
+  "goldRewards": { "mul": 1.0 },
+  "treasureLoot": { "uncommon": 55, "rare": 35, "very_rare": 10 },
+  "difficulties": [
+    { "id": 1, "name": "冒险者", "desc": "标准 5e 难度。怪物数值按表中的系数。", "hpMul": 1.0, "dmgMul": 1.0, "hitAdd": 0, "xpMul": 1.0, "goldMul": 1.0 },
+    { "id": 2, "name": "老兵", "desc": "怪物生命 +15%、伤害 +10%。", "hpMul": 1.15, "dmgMul": 1.1, "hitAdd": 1, "xpMul": 1.15, "goldMul": 1.1 },
+    { "id": 3, "name": "深渊", "desc": "怪物生命 +35%、伤害 +22%。", "hpMul": 1.35, "dmgMul": 1.22, "hitAdd": 2, "xpMul": 1.35, "goldMul": 1.25 },
+    { "id": 4, "name": "献祭", "desc": "怪物生命 +60%、伤害 +35%。", "hpMul": 1.6, "dmgMul": 1.35, "hitAdd": 3, "xpMul": 1.6, "goldMul": 1.4 },
+    { "id": 5, "name": "无光", "desc": "怪物生命 +90%、伤害 +50%。", "hpMul": 1.9, "dmgMul": 1.5, "hitAdd": 4, "xpMul": 1.9, "goldMul": 1.6 }
+  ]
+}

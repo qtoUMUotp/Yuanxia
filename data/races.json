@@ -1,0 +1,94 @@
+{
+  "_note": "种族。bonus 为属性加值；traits 的 effects 由引擎通用聚合，关键字见引擎 rules.js。",
+  "races": [
+    {
+      "id": "human", "name": "人类", "speed": 30, "size": "中型",
+      "bonus": { "str": 1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1 },
+      "traits": [
+        { "name": "多才多艺", "desc": "所有属性 +1。人类什么都学得会，什么都不精通——但在深渊里，均衡本身就是一种活法。", "effects": {} }
+      ],
+      "desc": "最容易上手的种族。六项属性各 +1，没有短板，适合任何职业。"
+    },
+    {
+      "id": "elf", "name": "高等精灵", "speed": 30, "size": "中型",
+      "bonus": { "dex": 2, "int": 1 },
+      "traits": [
+        { "name": "敏锐感官", "desc": "获得「察觉」技能熟练。", "effects": { "skillProfs": ["perception"] } },
+        { "name": "妖精血统", "desc": "对抗魅惑的豁免具有优势（简化为魅力豁免 +2）。", "effects": { "saveBonusCha": 2 } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "敏捷与智力兼备，自带察觉熟练。法师与游荡者的优秀底子。"
+    },
+    {
+      "id": "dwarf", "name": "山地矮人", "speed": 25, "size": "中型",
+      "bonus": { "con": 2, "str": 2 },
+      "traits": [
+        { "name": "矮人坚韧", "desc": "每级额外获得 2 点最大生命。", "effects": { "maxHpPerLevel": 2 } },
+        { "name": "毒素抗性", "desc": "对毒素伤害有抗性，对抗中毒的豁免具有优势。", "effects": { "resist": ["毒素"], "saveBonusCon": 2 } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "最厚的血线。战士与圣武士的理想肉身，代价是移动缓慢。"
+    },
+    {
+      "id": "halfling", "name": "轻足半身人", "speed": 25, "size": "小型",
+      "bonus": { "dex": 2, "cha": 1 },
+      "traits": [
+        { "name": "幸运", "desc": "每场战斗一次，攻击检定或豁免投出 1 时可以重投。", "effects": { "halflingLuck": 1 } },
+        { "name": "勇敢", "desc": "对抗恐惧的豁免具有优势（简化为全豁免 +1）。", "effects": { "saveBonus": 1 } },
+        { "name": "天生潜行", "desc": "可以躲在比自己大的生物后面。", "effects": {} }
+      ],
+      "desc": "运气是最好的护甲。游荡者的首选。"
+    },
+    {
+      "id": "half_orc", "name": "半兽人", "speed": 30, "size": "中型",
+      "bonus": { "str": 2, "con": 1 },
+      "traits": [
+        { "name": "坚韧不屈", "desc": "每场战斗一次，受到致命伤时以 1 HP 站起。", "effects": { "relentless": 1 } },
+        { "name": "凶蛮攻击", "desc": "近战重击时额外投一次武器伤害骰。", "effects": { "savageAttacks": 1 } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "打不死的人。战士、圣武士用起来最狠。"
+    },
+    {
+      "id": "tiefling", "name": "提夫林", "speed": 30, "size": "中型",
+      "bonus": { "cha": 2, "int": 1 },
+      "traits": [
+        { "name": "地狱抗性", "desc": "对火焰伤害有抗性。", "effects": { "resist": ["火焰"] } },
+        { "name": "炼狱血脉", "desc": "1 级学会「火焰箭」，3 级学会「炼狱斥责」（本作简化为：每场战斗一次可免费施放一次 1 环法术）。", "effects": { "freeSpellPerBattle": 1 } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "魅力与智力高，火抗在第三幕很值钱。术士/法师/圣武士都合适。"
+    },
+    {
+      "id": "dragonborn", "name": "龙裔", "speed": 30, "size": "中型",
+      "bonus": { "str": 2, "cha": 1 },
+      "traits": [
+        { "name": "吐息武器", "desc": "每场战斗一次，锥形吐息：所有敌人敏捷豁免 DC 13，失败受 2d6 火焰伤害（随等级提升）。", "effects": { "breathWeapon": true } },
+        { "name": "元素抗性", "desc": "对火焰伤害有抗性。", "effects": { "resist": ["火焰"] } }
+      ],
+      "desc": "自带一次群体攻击，在多人房间非常强。"
+    },
+    {
+      "id": "gnome", "name": "岩石侏儒", "speed": 25, "size": "小型",
+      "bonus": { "int": 2, "con": 1 },
+      "traits": [
+        { "name": "侏儒狡黠", "desc": "对抗魔法的智力、感知、魅力豁免具有优势（简化为这三项豁免 +2）。", "effects": { "saveBonusInt": 2, "saveBonusWis": 2, "saveBonusCha": 2 } },
+        { "name": "工匠学识", "desc": "获得「调查」技能熟练。", "effects": { "skillProfs": ["investigation"] } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "法师的保命天赋：对法术豁免更强。"
+    },
+    {
+      "id": "half_elf", "name": "半精灵", "speed": 30, "size": "中型",
+      "bonus": { "cha": 2 },
+      "bonusChoice": { "count": 2, "amount": 1, "from": ["str", "dex", "con", "int", "wis"] },
+      "traits": [
+        { "name": "多面手", "desc": "自选两项属性各 +1。", "effects": {} },
+        { "name": "妖精血统", "desc": "对抗魅惑的豁免具有优势（简化为魅力豁免 +2）。", "effects": { "saveBonusCha": 2 } },
+        { "name": "技能多面", "desc": "额外获得一项自选技能熟练。", "effects": { "extraSkill": 1 } },
+        { "name": "黑暗视觉", "desc": "在黑暗中视物 60 尺。", "effects": {} }
+      ],
+      "desc": "最自由的开局：两项属性自选 +1，还能多拿一个技能熟练。"
+    }
+  ]
+}

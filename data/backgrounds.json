@@ -1,0 +1,13 @@
+{
+  "_note": "背景：各自给 2 项技能熟练 + 一个小被动。",
+  "backgrounds": [
+    { "id": "soldier", "name": "士兵", "skills": ["athletics", "intimidation"], "effects": { "skillBonus": 1 }, "desc": "你在军旗下站过很多年。知道怎么排队、怎么流血、怎么在长官看不见的时候活下来。", "perk": "军旅生涯：所有技能检定 +1。" },
+    { "id": "sage", "name": "学者", "skills": ["history", "arcana"], "effects": { "spellDc": 1 }, "desc": "你读过太多书，以至于开始怀疑书里写的都是别人编的。", "perk": "博学：法术 DC +1。" },
+    { "id": "urchin", "name": "流浪儿", "skills": ["stealth", "sleight_of_hand"], "effects": { "initiative": 2 }, "desc": "你在屋檐和下水道之间长大，学会的第一件事是跑得比人快。", "perk": "街头本能：先攻 +2。" },
+    { "id": "noble", "name": "贵族", "skills": ["history", "persuasion"], "effects": { "shopDiscount": 0.1 }, "desc": "你有一串很长的名字和一个已经典当掉的家族印章。", "perk": "人脉：商店价格 -10%。" },
+    { "id": "hermit", "name": "隐士", "skills": ["medicine", "religion"], "effects": { "healBonus": 3 }, "desc": "你在山里待了十年，回来时发现世界并不关心你去了哪里。", "perk": "草药知识：所有治疗效果 +3。" },
+    { "id": "criminal", "name": "罪犯", "skills": ["deception", "stealth"], "effects": { "startGold": 60 }, "desc": "你认识一些人，他们也都认识你——这不是好事。", "perk": "黑市门路：起始金币 +60。" },
+    { "id": "folk_hero", "name": "民间英雄", "skills": ["animal_handling", "survival"], "effects": { "restHealBonus": 0.1 }, "desc": "你做过一件让全村记住的事。之后你就再也没能安静地生活。", "perk": "乡民之恩：每次休整额外回复 10% 生命。" },
+    { "id": "acolyte", "name": "侍僧", "skills": ["insight", "religion"], "effects": { "maxHp": 6 }, "desc": "你在神殿里点过很多蜡烛，也听过很多不该听的告解。", "perk": "信仰庇护：最大生命 +6。" }
+  ]
+}

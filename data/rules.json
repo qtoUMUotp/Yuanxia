@@ -1,0 +1,643 @@
+{
+  "_note": "规则常量。18 项技能、状态白名单、熟练加值、法术位表、专长、购点法。",
+  "attrLabels": {
+    "str": "力量",
+    "dex": "敏捷",
+    "con": "体质",
+    "int": "智力",
+    "wis": "感知",
+    "cha": "魅力"
+  },
+  "attrShort": {
+    "str": "力",
+    "dex": "敏",
+    "con": "体",
+    "int": "智",
+    "wis": "感",
+    "cha": "魅"
+  },
+  "xpTable": [
+    0,
+    80,
+    200,
+    380,
+    620,
+    920,
+    1300,
+    1750,
+    2250,
+    2800
+  ],
+  "proficiencyByLevel": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4
+  ],
+  "pointBuy": {
+    "total": 27,
+    "min": 8,
+    "max": 15,
+    "cost": {
+      "8": 0,
+      "9": 1,
+      "10": 2,
+      "11": 3,
+      "12": 4,
+      "13": 5,
+      "14": 7,
+      "15": 9
+    }
+  },
+  "deathSaves": {
+    "successes": 3,
+    "failures": 3,
+    "dc": 10
+  },
+  "fullCasterSlots": {
+    "1": [
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    "2": [
+      3,
+      0,
+      0,
+      0,
+      0
+    ],
+    "3": [
+      4,
+      2,
+      0,
+      0,
+      0
+    ],
+    "4": [
+      4,
+      3,
+      0,
+      0,
+      0
+    ],
+    "5": [
+      4,
+      3,
+      2,
+      0,
+      0
+    ],
+    "6": [
+      4,
+      3,
+      3,
+      0,
+      0
+    ],
+    "7": [
+      4,
+      3,
+      3,
+      1,
+      0
+    ],
+    "8": [
+      4,
+      3,
+      3,
+      2,
+      0
+    ],
+    "9": [
+      4,
+      3,
+      3,
+      3,
+      1
+    ],
+    "10": [
+      4,
+      3,
+      3,
+      3,
+      2
+    ]
+  },
+  "halfCasterSlots": {
+    "1": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "2": [
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    "3": [
+      3,
+      0,
+      0,
+      0,
+      0
+    ],
+    "4": [
+      3,
+      0,
+      0,
+      0,
+      0
+    ],
+    "5": [
+      4,
+      2,
+      0,
+      0,
+      0
+    ],
+    "6": [
+      4,
+      2,
+      0,
+      0,
+      0
+    ],
+    "7": [
+      4,
+      3,
+      0,
+      0,
+      0
+    ],
+    "8": [
+      4,
+      3,
+      0,
+      0,
+      0
+    ],
+    "9": [
+      4,
+      3,
+      2,
+      0,
+      0
+    ],
+    "10": [
+      4,
+      3,
+      2,
+      0,
+      0
+    ]
+  },
+  "slotLevelNames": [
+    "一环",
+    "二环",
+    "三环",
+    "四环",
+    "五环"
+  ],
+  "skills": [
+    {
+      "id": "athletics",
+      "name": "运动",
+      "attr": "str"
+    },
+    {
+      "id": "acrobatics",
+      "name": "杂技",
+      "attr": "dex"
+    },
+    {
+      "id": "sleight_of_hand",
+      "name": "手上功夫",
+      "attr": "dex"
+    },
+    {
+      "id": "stealth",
+      "name": "隐匿",
+      "attr": "dex"
+    },
+    {
+      "id": "arcana",
+      "name": "奥秘",
+      "attr": "int"
+    },
+    {
+      "id": "history",
+      "name": "历史",
+      "attr": "int"
+    },
+    {
+      "id": "investigation",
+      "name": "调查",
+      "attr": "int"
+    },
+    {
+      "id": "nature",
+      "name": "自然",
+      "attr": "int"
+    },
+    {
+      "id": "religion",
+      "name": "宗教",
+      "attr": "int"
+    },
+    {
+      "id": "animal_handling",
+      "name": "驯兽",
+      "attr": "wis"
+    },
+    {
+      "id": "insight",
+      "name": "洞悉",
+      "attr": "wis"
+    },
+    {
+      "id": "medicine",
+      "name": "医药",
+      "attr": "wis"
+    },
+    {
+      "id": "perception",
+      "name": "察觉",
+      "attr": "wis"
+    },
+    {
+      "id": "survival",
+      "name": "生存",
+      "attr": "wis"
+    },
+    {
+      "id": "deception",
+      "name": "欺骗",
+      "attr": "cha"
+    },
+    {
+      "id": "intimidation",
+      "name": "威吓",
+      "attr": "cha"
+    },
+    {
+      "id": "performance",
+      "name": "表演",
+      "attr": "cha"
+    },
+    {
+      "id": "persuasion",
+      "name": "游说",
+      "attr": "cha"
+    }
+  ],
+  "conditions": {
+    "poisoned": {
+      "name": "中毒",
+      "icon": "☠",
+      "desc": "攻击检定与属性检定具有劣势。"
+    },
+    "burning": {
+      "name": "燃烧",
+      "icon": "🔥",
+      "desc": "每回合开始时受到 1d4 火焰伤害。"
+    },
+    "stunned": {
+      "name": "眩晕",
+      "icon": "💫",
+      "desc": "无法行动。"
+    },
+    "restrained": {
+      "name": "束缚",
+      "icon": "🕸",
+      "desc": "无法行动，攻击它的检定具有优势。"
+    },
+    "frightened": {
+      "name": "恐惧",
+      "icon": "😱",
+      "desc": "攻击检定具有劣势。"
+    },
+    "blinded": {
+      "name": "目盲",
+      "icon": "🌑",
+      "desc": "攻击检定具有劣势，被攻击时有优势。"
+    },
+    "prone": {
+      "name": "倒地",
+      "icon": "⬇",
+      "desc": "近战攻击它的检定具有优势。"
+    },
+    "invisible": {
+      "name": "隐形",
+      "icon": "👻",
+      "desc": "攻击检定有优势，被攻击时有劣势。"
+    },
+    "blessed": {
+      "name": "祝福",
+      "icon": "✨",
+      "desc": "攻击检定与豁免 +1d4。"
+    },
+    "hasted": {
+      "name": "加速",
+      "icon": "💨",
+      "desc": "额外一次攻击，AC +2。"
+    },
+    "weakened": {
+      "name": "虚弱",
+      "icon": "🔻",
+      "desc": "造成的伤害减半。"
+    },
+    "dying": {
+      "name": "濒死",
+      "icon": "💀",
+      "desc": "正在进行死亡豁免。"
+    }
+  },
+  "feats": [
+    {
+      "id": "feat_tough",
+      "name": "强健",
+      "desc": "最大生命 +2/等级。",
+      "effects": {
+        "maxHpPerLevel": 2
+      }
+    },
+    {
+      "id": "feat_gwm",
+      "name": "巨武大师",
+      "desc": "重击或击杀后，下一次攻击获得优势；重型武器伤害 +2。",
+      "effects": {
+        "dmg": 2,
+        "cleaveOnKill": 1
+      }
+    },
+    {
+      "id": "feat_sharpshooter",
+      "name": "神射手",
+      "desc": "远程武器命中 +2，伤害 +2。",
+      "effects": {
+        "rangedHit": 2,
+        "rangedDmg": 2
+      }
+    },
+    {
+      "id": "feat_war_caster",
+      "name": "战地施法者",
+      "desc": "法术 DC +1，法术强度 +2，专注不易被打断。",
+      "effects": {
+        "spellDc": 1,
+        "spellDmg": 2
+      }
+    },
+    {
+      "id": "feat_resilient",
+      "name": "坚韧",
+      "desc": "最大生命 +14，所有豁免 +1。",
+      "effects": {
+        "maxHp": 14,
+        "saveBonus": 1
+      }
+    },
+    {
+      "id": "feat_alert",
+      "name": "警觉",
+      "desc": "先攻 +5，不会被突袭。",
+      "effects": {
+        "initiative": 5,
+        "noSurprise": 1
+      }
+    },
+    {
+      "id": "feat_lucky",
+      "name": "幸运",
+      "desc": "每场战斗 3 次，可以重投一次 d20。",
+      "effects": {
+        "luckPoints": 3
+      }
+    },
+    {
+      "id": "feat_savage",
+      "name": "凶蛮攻击者",
+      "desc": "重击范围扩大到 19-20。",
+      "effects": {
+        "critRange": 19
+      }
+    },
+    {
+      "id": "feat_dual_wielder",
+      "name": "双持客",
+      "desc": "AC +1，副手攻击伤害 +2。",
+      "effects": {
+        "ac": 1,
+        "offhandDmg": 2
+      }
+    },
+    {
+      "id": "feat_sentinel",
+      "name": "哨兵",
+      "desc": "AC +1，被命中时有一次机会反击。",
+      "effects": {
+        "ac": 1,
+        "riposte": 1
+      }
+    },
+    {
+      "id": "feat_mage_slayer",
+      "name": "法师杀手",
+      "desc": "对施法者的攻击有优势，豁免 +2。",
+      "effects": {
+        "saveBonus": 2
+      }
+    },
+    {
+      "id": "feat_athlete",
+      "name": "运动健将",
+      "desc": "最大生命 +10，力量或敏捷 +1。",
+      "effects": {
+        "maxHp": 10
+      },
+      "attrChoice": [
+        "str",
+        "dex"
+      ]
+    },
+    {
+      "id": "feat_observant",
+      "name": "观察力",
+      "desc": "察觉与调查检定 +3，先攻 +2。",
+      "effects": {
+        "skillBonus": 3,
+        "initiative": 2
+      }
+    },
+    {
+      "id": "feat_inspiring",
+      "name": "鼓舞领袖",
+      "desc": "每场战斗开始时获得 8 点临时生命。",
+      "effects": {
+        "battleStartTempHp": 8
+      }
+    },
+    {
+      "id": "feat_elemental_adept",
+      "name": "元素导师",
+      "desc": "火焰/冰霜/闪电伤害 +4，法术强度 +1。",
+      "effects": {
+        "elemDmg": 4,
+        "spellDmg": 1
+      }
+    },
+    {
+      "id": "many_rings",
+      "name": "十指皆环",
+      "desc": "你学会了让多枚戒指的魔力互不干扰。戒指上限 +3。",
+      "effects": {
+        "ringSlots": 3
+      }
+    },
+    {
+      "id": "ring_sovereign",
+      "name": "环之王",
+      "desc": "十指与骨头都成了导体。戒指上限 +8（最多 20 枚）。",
+      "effects": {
+        "ringSlots": 8
+      }
+    },
+    {
+      "id": "feat_heavy_armor_master",
+      "name": "重甲大师",
+      "desc": "身着重甲时，受到的伤害 -3。",
+      "effects": {
+        "dr": 3
+      }
+    },
+    {
+      "id": "feat_piercer",
+      "name": "穿刺好手",
+      "desc": "重击额外多一颗武器伤害骰；伤害 +1。",
+      "effects": {
+        "critExtraDice": 1,
+        "dmg": 1
+      }
+    },
+    {
+      "id": "feat_spell_sniper",
+      "name": "法术狙击手",
+      "desc": "法术 DC +1，法术强度 +2。",
+      "effects": {
+        "spellDc": 1,
+        "spellDmg": 2
+      }
+    },
+    {
+      "id": "feat_arcanist",
+      "name": "奥术学者",
+      "desc": "法术 DC +1，法术强度 +1，最大生命 +6。",
+      "effects": {
+        "spellDc": 1,
+        "spellDmg": 1,
+        "maxHp": 6
+      }
+    },
+    {
+      "id": "feat_quick",
+      "name": "迅捷",
+      "desc": "先攻 +3，AC +1。",
+      "effects": {
+        "initiative": 3,
+        "ac": 1
+      }
+    },
+    {
+      "id": "feat_weapon_master",
+      "name": "武器大师",
+      "desc": "命中 +1，伤害 +1。",
+      "effects": {
+        "hit": 1,
+        "dmg": 1
+      }
+    },
+    {
+      "id": "feat_enduring",
+      "name": "坚韧体魄",
+      "desc": "最大生命 +16，每局长休次数 +1。",
+      "effects": {
+        "maxHp": 16,
+        "restLong": 1
+      }
+    },
+    {
+      "id": "feat_deft",
+      "name": "灵巧身法",
+      "desc": "AC +1，先攻 +2。",
+      "effects": {
+        "ac": 1,
+        "initBonus": 2
+      }
+    }
+  ],
+  "fightingStyles": [
+    {
+      "id": "fs_archery",
+      "name": "箭术",
+      "desc": "远程武器命中 +2。",
+      "effects": {
+        "rangedHit": 2
+      }
+    },
+    {
+      "id": "fs_defense",
+      "name": "防御",
+      "desc": "AC +1。",
+      "effects": {
+        "ac": 1
+      }
+    },
+    {
+      "id": "fs_dueling",
+      "name": "决斗",
+      "desc": "单手持用时伤害 +2。",
+      "effects": {
+        "oneHandDmg": 2
+      }
+    },
+    {
+      "id": "fs_great",
+      "name": "巨武战斗",
+      "desc": "重击时额外 +1 倍武器伤害骰；伤害 +1。",
+      "effects": {
+        "dmg": 1,
+        "critExtraDice": 1
+      }
+    },
+    {
+      "id": "fs_protection",
+      "name": "守护",
+      "desc": "最大生命 +8，AC +1。",
+      "effects": {
+        "maxHp": 8,
+        "ac": 1
+      }
+    },
+    {
+      "id": "fs_two_weapon",
+      "name": "双武器战斗",
+      "desc": "副手攻击伤害 +3。",
+      "effects": {
+        "offhandDmg": 3
+      }
+    }
+  ]
+}

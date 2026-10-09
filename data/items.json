@@ -1,0 +1,1196 @@
+{
+  "weapons": [
+    {
+      "id": "dagger",
+      "name": "匕首",
+      "category": "simple",
+      "kind": "melee",
+      "dice": "1d4",
+      "versatile": null,
+      "type": "穿刺",
+      "properties": [
+        "finesse",
+        "light",
+        "thrown"
+      ],
+      "price": 2,
+      "verbs": [
+        "反手划向喉咙",
+        "贴着手腕刺进去",
+        "抬手掷出匕首",
+        "压低身子捅向腰肋"
+      ]
+    },
+    {
+      "id": "club",
+      "name": "短棒",
+      "category": "simple",
+      "kind": "melee",
+      "dice": "1d4",
+      "versatile": null,
+      "type": "钝击",
+      "properties": [
+        "light"
+      ],
+      "price": 1,
+      "verbs": [
+        "抡圆了短棒砸下",
+        "照着头顶敲过去",
+        "横着捣向胸口"
+      ]
+    },
+    {
+      "id": "spear",
+      "name": "长矛",
+      "category": "simple",
+      "kind": "melee",
+      "dice": "1d6",
+      "versatile": "1d8",
+      "type": "穿刺",
+      "properties": [
+        "versatile",
+        "thrown"
+      ],
+      "price": 1,
+      "verbs": [
+        "平端长矛捅出",
+        "双手压着矛身贯穿过去",
+        "从上往下扎向肩窝",
+        "把长矛当标枪掷出"
+      ]
+    },
+    {
+      "id": "handaxe",
+      "name": "手斧",
+      "category": "simple",
+      "kind": "melee",
+      "dice": "1d6",
+      "versatile": null,
+      "type": "挥砍",
+      "properties": [
+        "light",
+        "thrown"
+      ],
+      "price": 5,
+      "verbs": [
+        "劈向对方持械的手",
+        "斜着一斧斫进肩头",
+        "把斧子甩出去削向面门"
+      ]
+    },
+    {
+      "id": "light_hammer",
+      "name": "轻锤",
+      "category": "simple",
+      "kind": "melee",
+      "dice": "1d4",
+      "versatile": null,
+      "type": "钝击",
+      "properties": [
+        "light",
+        "thrown"
+      ],
+      "price": 2,
+      "verbs": [
+        "锤头磕在膝盖上",
+        "抡锤砸向太阳穴",
+        "甩手把锤子掷出去"
+      ]
+    },
+    {
+      "id": "shortbow",
+      "name": "短弓",
+      "category": "simple",
+      "kind": "ranged",
+      "dice": "1d6",
+      "versatile": null,
+      "type": "穿刺",
+      "properties": [
+        "ammunition",
+        "two_handed"
+      ],
+      "price": 25,
+      "verbs": [
+        "侧身拉弓射出一箭",
+        "半跪着放出一箭",
+        "箭矢擦着岩壁钉进肩甲",
+        "连珠般抽出第二箭"
+      ]
+    },
+    {
+      "id": "longsword",
+      "name": "长剑",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "1d8",
+      "versatile": "1d10",
+      "type": "挥砍",
+      "properties": [
+        "versatile"
+      ],
+      "price": 15,
+      "verbs": [
+        "挥动长剑",
+        "斜劈下去",
+        "长剑前刺",
+        "横斩过去"
+      ]
+    },
+    {
+      "id": "greatsword",
+      "name": "巨剑",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "2d6",
+      "versatile": null,
+      "type": "挥砍",
+      "properties": [
+        "heavy",
+        "two_handed"
+      ],
+      "price": 50,
+      "verbs": [
+        "双手举剑过顶劈落",
+        "剑身横扫扫过一整排",
+        "把剑当棍子砸下去",
+        "借着转身的力道斩进肋骨"
+      ]
+    },
+    {
+      "id": "battleaxe",
+      "name": "战斧",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "1d8",
+      "versatile": "1d10",
+      "type": "挥砍",
+      "properties": [
+        "versatile"
+      ],
+      "price": 10,
+      "verbs": [
+        "斧刃劈开盾牌",
+        "双手抡斧砸落",
+        "用斧背磕碎下颌",
+        "自下往上撩开腹部"
+      ]
+    },
+    {
+      "id": "warhammer",
+      "name": "战锤",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "1d8",
+      "versatile": "1d10",
+      "type": "钝击",
+      "properties": [
+        "versatile"
+      ],
+      "price": 15,
+      "verbs": [
+        "锤头砸在头盔上",
+        "双手抡锤砸塌胸口",
+        "横扫过去打断小腿",
+        "自上而下把对手钉进地面"
+      ]
+    },
+    {
+      "id": "rapier",
+      "name": "细剑",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "1d8",
+      "versatile": null,
+      "type": "穿刺",
+      "properties": [
+        "finesse"
+      ],
+      "price": 25,
+      "verbs": [
+        "剑尖递出一记直刺",
+        "绕开护手点向咽喉",
+        "错步欺身刺进肋缝",
+        "用剑身引开兵刃后回刺"
+      ]
+    },
+    {
+      "id": "halberd",
+      "name": "长戟",
+      "category": "martial",
+      "kind": "melee",
+      "dice": "1d10",
+      "versatile": null,
+      "type": "挥砍",
+      "properties": [
+        "heavy",
+        "reach",
+        "two_handed"
+      ],
+      "price": 20,
+      "verbs": [
+        "斧刃自上方劈下",
+        "用戟尖挑开对手的兵器",
+        "横持戟杆撞向胸口",
+        "在两步之外勾住对方的脚踝"
+      ]
+    },
+    {
+      "id": "longbow",
+      "name": "长弓",
+      "category": "martial",
+      "kind": "ranged",
+      "dice": "1d8",
+      "versatile": null,
+      "type": "穿刺",
+      "properties": [
+        "ammunition",
+        "heavy",
+        "two_handed"
+      ],
+      "price": 50,
+      "verbs": [
+        "张满长弓射出一箭",
+        "屏息瞄准后松弦",
+        "箭矢穿进锁甲的缝隙",
+        "半跪着甩出一记抛射"
+      ]
+    },
+    {
+      "id": "heavy_crossbow",
+      "name": "重弩",
+      "category": "martial",
+      "kind": "ranged",
+      "dice": "1d10",
+      "versatile": null,
+      "type": "穿刺",
+      "properties": [
+        "ammunition",
+        "heavy",
+        "loading",
+        "two_handed"
+      ],
+      "price": 50,
+      "verbs": [
+        "架稳重弩射出弩矢",
+        "把弩托抵在肩上击发",
+        "弩矢连人带甲一起贯穿"
+      ]
+    }
+  ],
+  "armors": [
+    {
+      "id": "padded_armor",
+      "name": "布衣",
+      "category": "light",
+      "base": 11,
+      "dexCap": null,
+      "minStr": null,
+      "stealthDisadvantage": true,
+      "price": 5
+    },
+    {
+      "id": "leather_armor",
+      "name": "皮甲",
+      "category": "light",
+      "base": 11,
+      "dexCap": null,
+      "minStr": null,
+      "stealthDisadvantage": false,
+      "price": 10
+    },
+    {
+      "id": "studded_leather",
+      "name": "镶钉皮甲",
+      "category": "light",
+      "base": 12,
+      "dexCap": null,
+      "minStr": null,
+      "stealthDisadvantage": false,
+      "price": 45
+    },
+    {
+      "id": "scale_mail",
+      "name": "鳞甲",
+      "category": "medium",
+      "base": 14,
+      "dexCap": 2,
+      "minStr": 12,
+      "stealthDisadvantage": true,
+      "price": 50
+    },
+    {
+      "id": "half_plate",
+      "name": "半身板甲",
+      "category": "medium",
+      "base": 15,
+      "dexCap": 2,
+      "minStr": 13,
+      "stealthDisadvantage": true,
+      "price": 750
+    },
+    {
+      "id": "chain_mail",
+      "name": "锁子甲",
+      "category": "heavy",
+      "base": 16,
+      "dexCap": 0,
+      "minStr": 13,
+      "stealthDisadvantage": true,
+      "price": 75
+    },
+    {
+      "id": "plate_armor",
+      "name": "板甲",
+      "category": "heavy",
+      "base": 18,
+      "dexCap": 0,
+      "minStr": 15,
+      "stealthDisadvantage": true,
+      "price": 1500
+    },
+    {
+      "id": "shield",
+      "name": "盾牌",
+      "category": "shield",
+      "base": 2,
+      "dexCap": null,
+      "minStr": null,
+      "stealthDisadvantage": false,
+      "price": 10
+    }
+  ],
+  "magicItems": [
+    {
+      "id": "ember_dagger",
+      "name": "余烬短匕",
+      "rarity": "uncommon",
+      "slot": "weapon",
+      "base": "dagger",
+      "bonus": {
+        "hit": 1,
+        "dmg": 1
+      },
+      "mods": {},
+      "extraDice": "1d4",
+      "extraType": "火焰",
+      "desc": "攻击检定与伤害 +1；命中时额外造成 1d4 火焰伤害，刀身始终烫手。",
+      "flavor": "矿工从熄了三百年的锻炉灰里刨出它，刃口还是红的。"
+    },
+    {
+      "id": "bog_walker_armor",
+      "name": "沼行皮甲",
+      "rarity": "uncommon",
+      "slot": "armor",
+      "base": "leather_armor",
+      "bonus": {},
+      "mods": {
+        "ac": 1,
+        "maxHp": 8
+      },
+      "desc": "AC +1，最大生命 +8；甲片浸过苔沼的树脂，行动时不再打滑。",
+      "flavor": "打捞上来的旧甲上长满苔藓，穿上却比新甲更贴服。"
+    },
+    {
+      "id": "oak_shield",
+      "name": "橡木守誓盾",
+      "rarity": "uncommon",
+      "slot": "shield",
+      "base": "shield",
+      "bonus": {},
+      "mods": {
+        "ac": 1,
+        "spellDc": 1
+      },
+      "desc": "AC +1、法术豁免 DC +1；盾面刻着树精的誓纹，握久了心里发稳。",
+      "flavor": "树精幼苗倒下前把誓纹刻上盾面，说这样你就算有个伴。"
+    },
+    {
+      "id": "vitality_charm",
+      "name": "铁胃护符",
+      "rarity": "uncommon",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "maxHp": 12
+      },
+      "desc": "最大生命 +12；佩戴者能咽下任何东西，也扛得住更狠的捶打。",
+      "flavor": "矮人把它塞给你时说：能咽下去的东西，都不算毒。"
+    },
+    {
+      "id": "hunter_brooch",
+      "name": "猎手胸针",
+      "rarity": "uncommon",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "hit": 1,
+        "dmg": 2
+      },
+      "desc": "攻击检定 +1、伤害 +2；指针会微微发抖，指向最该先杀的那一个。",
+      "flavor": "胸针的针尖总朝着血腥味最浓的方向偏。"
+    },
+    {
+      "id": "ash_ward_ring",
+      "name": "灰烬护环",
+      "rarity": "uncommon",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "ac": 1
+      },
+      "resist": [
+        "火焰"
+      ],
+      "desc": "AC +1，获得火焰抗性；环身冰凉，火舌舔上来会自己绕开。",
+      "flavor": "黑曜圣所的每一场献祭，都会在灰里留下这样一只环。"
+    },
+    {
+      "id": "coil_of_serpents",
+      "name": "缠蛇链锤",
+      "rarity": "uncommon",
+      "slot": "weapon",
+      "base": "light_hammer",
+      "bonus": {},
+      "mods": {},
+      "cond_on_hit": {
+        "id": "poisoned",
+        "name": "中毒",
+        "turns": 2
+      },
+      "desc": "命中时让目标中毒 2 回合；锤头的铁环里盘着一条风干的蛇。",
+      "flavor": "链锤甩起来的那一刻，蛇的鳞片会和铁一样响。"
+    },
+    {
+      "id": "steadfast_helm",
+      "name": "定神盔",
+      "rarity": "uncommon",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "ac": 1
+      },
+      "daily": {
+        "id": "clear_mind",
+        "name": "定神",
+        "desc": "每场战斗一次，以附赠动作清空杂念：本回合攻击检定获得优势，并清除自身的恐惧。"
+      },
+      "desc": "AC +1；每场战斗一次，以附赠动作驱散恐惧，本回合攻击具有优势。",
+      "flavor": "盔内衬着一层人的头发，据说它记得所有害怕的夜晚。"
+    },
+    {
+      "id": "flame_tongue",
+      "name": "焰舌剑",
+      "rarity": "rare",
+      "slot": "weapon",
+      "base": "longsword",
+      "bonus": {
+        "hit": 1,
+        "dmg": 1
+      },
+      "mods": {
+        "dmg": 2
+      },
+      "extraDice": "2d6",
+      "extraType": "火焰",
+      "desc": "攻击检定与伤害 +1，伤害再 +2；命中时额外造成 2d6 火焰伤害。",
+      "flavor": "剑身被火裹成一条舌头，挥动时会留下半秒的焦痕。"
+    },
+    {
+      "id": "frostbite_greatsword",
+      "name": "霜噬巨剑",
+      "rarity": "rare",
+      "slot": "weapon",
+      "base": "greatsword",
+      "bonus": {},
+      "mods": {
+        "dmg": 1,
+        "ac": 1
+      },
+      "extraDice": "1d8",
+      "extraType": "冰霜",
+      "desc": "伤害 +1、AC +1；命中时额外造成 1d8 冰霜伤害，并让敌人动作发涩。",
+      "flavor": "剑格上结着永不化的霜，握柄却从不冻手——它在等你献上体温。"
+    },
+    {
+      "id": "crypt_plate",
+      "name": "墓土重铠",
+      "rarity": "rare",
+      "slot": "armor",
+      "base": "chain_mail",
+      "bonus": {},
+      "mods": {
+        "ac": 2,
+        "maxHp": 10
+      },
+      "resist": [
+        "暗蚀"
+      ],
+      "desc": "AC +2、最大生命 +10，获得暗蚀抗性；土腥味顺着甲缝往上爬。",
+      "flavor": "从矿坑领主的棺盖上撬下来，甲里还压着一层薄薄的墓土。"
+    },
+    {
+      "id": "tower_of_walls",
+      "name": "壁垒塔盾",
+      "rarity": "rare",
+      "slot": "shield",
+      "base": "shield",
+      "bonus": {},
+      "mods": {
+        "ac": 3
+      },
+      "desc": "AC +3；把盾沿顿进地砖，就能挡住一整面飞来的箭。",
+      "flavor": "盾面上有七个凹陷，七个凹陷都在同一个位置。"
+    },
+    {
+      "id": "tidecaller_trident",
+      "name": "潮鸣三叉戟",
+      "rarity": "rare",
+      "slot": "weapon",
+      "base": "spear",
+      "bonus": {
+        "hit": 1
+      },
+      "mods": {},
+      "extraDice": "1d6",
+      "extraType": "闪电",
+      "cond_on_hit": {
+        "id": "stunned",
+        "name": "眩晕",
+        "turns": 2
+      },
+      "desc": "攻击检定 +1；命中时额外 1d6 闪电伤害，并有几率让目标眩晕 2 回合。",
+      "flavor": "它在退潮时被冲上岸，三根戟尖上还挂着没散尽的雷声。"
+    },
+    {
+      "id": "spellweaver_ring",
+      "name": "织法指环",
+      "rarity": "rare",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "spellDc": 2,
+        "spellDmg": 2,
+        "hit": 1
+      },
+      "desc": "法术豁免 DC +2、法术伤害 +2，攻击检定 +1；指环把咒语咬得更紧。",
+      "flavor": "黑曜大祭司的学徒用它把自己的名字从记忆里织掉了。"
+    },
+    {
+      "id": "blightwood_bow",
+      "name": "枯木长弓",
+      "rarity": "rare",
+      "slot": "weapon",
+      "base": "longbow",
+      "bonus": {
+        "hit": 2
+      },
+      "mods": {},
+      "extraDice": "1d6",
+      "extraType": "毒素",
+      "cond_on_hit": {
+        "id": "poisoned",
+        "name": "中毒",
+        "turns": 2
+      },
+      "desc": "攻击检定 +2；命中时额外 1d6 毒素伤害，并让目标中毒 2 回合。",
+      "flavor": "弓身是一株长在尸水里的树，弦是它自己的根。"
+    },
+    {
+      "id": "stone_grip_gauntlets",
+      "name": "石握护手",
+      "rarity": "rare",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {
+        "hit": 1,
+        "dmg": 1
+      },
+      "mods": {
+        "maxHp": 10
+      },
+      "desc": "攻击检定与伤害 +1，最大生命 +10；护手把武器焊进你掌纹里。",
+      "flavor": "石像鬼的指节磨成的护手，握住它的人从不脱手。"
+    },
+    {
+      "id": "inferno_blade",
+      "name": "炼狱炽刃",
+      "rarity": "very_rare",
+      "slot": "weapon",
+      "base": "greatsword",
+      "bonus": {
+        "hit": 2,
+        "dmg": 2
+      },
+      "mods": {
+        "ac": 1
+      },
+      "extraDice": "2d6",
+      "extraType": "火焰",
+      "desc": "攻击检定与伤害 +2、AC +1；命中时额外造成 2d6 火焰伤害。",
+      "flavor": "刃上刻着一段用火写成的契约，签名的部分被烧掉了。"
+    },
+    {
+      "id": "dragonscale_plate",
+      "name": "龙骨板铠",
+      "rarity": "very_rare",
+      "slot": "armor",
+      "base": "half_plate",
+      "bonus": {},
+      "mods": {
+        "ac": 2,
+        "maxHp": 15
+      },
+      "resist": [
+        "火焰",
+        "强酸"
+      ],
+      "desc": "AC +2、最大生命 +15，获得火焰与强酸抗性；鳞片会随呼吸微微开合。",
+      "flavor": "鳞甲内侧还留着龙的体温，这就是它两百年来没凉过的原因。"
+    },
+    {
+      "id": "aegis_of_dawn",
+      "name": "破晓圣盾",
+      "rarity": "very_rare",
+      "slot": "shield",
+      "base": "shield",
+      "bonus": {},
+      "mods": {
+        "ac": 3,
+        "spellDc": 1
+      },
+      "daily": {
+        "id": "dawn_burst",
+        "name": "破晓",
+        "desc": "每场战斗一次，举盾爆发晨光：本回合 AC 再 +2，并对周围敌人结算一次 3d8 光耀伤害。"
+      },
+      "desc": "AC +3、法术豁免 DC +1；每场战斗一次，举盾爆发晨光（本回合 AC 再 +2）。",
+      "flavor": "盾心嵌着一块黎明时分才发热的金属，天亮之前它是冷的。"
+    },
+    {
+      "id": "voidheart_amulet",
+      "name": "虚寂护符",
+      "rarity": "very_rare",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "maxHp": 20,
+        "ac": 1
+      },
+      "resist": [
+        "暗蚀",
+        "心灵"
+      ],
+      "desc": "AC +1、最大生命 +20，获得暗蚀与心灵抗性；护符把靠近的低语吃干净。",
+      "flavor": "它里面什么都没有，所以什么也塞不进去——包括那些声音。"
+    },
+    {
+      "id": "thunderlord_maul",
+      "name": "雷主战锤",
+      "rarity": "very_rare",
+      "slot": "weapon",
+      "base": "warhammer",
+      "bonus": {
+        "hit": 1,
+        "dmg": 2
+      },
+      "mods": {},
+      "extraDice": "2d6",
+      "extraType": "雷鸣",
+      "cond_on_hit": {
+        "id": "prone",
+        "name": "倒地",
+        "turns": 2
+      },
+      "desc": "攻击检定 +1、伤害 +2；命中时额外 2d6 雷鸣伤害，并把目标砸倒在地 2 回合。",
+      "flavor": "锤头里封着一记还没落下的雷，每次挥动它都往里挣扎一下。"
+    },
+    {
+      "id": "sunfire_longsword",
+      "name": "烈阳裁决剑",
+      "rarity": "legendary",
+      "slot": "weapon",
+      "base": "longsword",
+      "bonus": {
+        "hit": 3,
+        "dmg": 3
+      },
+      "mods": {
+        "ac": 1
+      },
+      "extraDice": "2d6",
+      "extraType": "火焰",
+      "desc": "攻击检定与伤害 +3、AC +1；每次命中额外造成 2d6 火焰伤害，剑光会自己追着伤口走。",
+      "flavor": "它最后一次出鞘是在一座烧了七天七夜的圣所里，剑没熄，圣所熄了。"
+    },
+    {
+      "id": "crown_of_second_breath",
+      "name": "回息之冠",
+      "rarity": "legendary",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "ac": 2,
+        "maxHp": 25
+      },
+      "resist": [
+        "暗蚀",
+        "毒素"
+      ],
+      "daily": {
+        "id": "second_breath",
+        "name": "回息",
+        "desc": "每场战斗一次，在你被击倒的瞬间以 1 点生命站起来，并立刻清除身上的负面状态。"
+      },
+      "desc": "AC +2、最大生命 +25，暗蚀与毒素抗性；每场战斗一次，被击倒时以 1 HP 站起并清除负面状态。",
+      "flavor": "冠上的宝石是一颗停了的心，它只答应为一件事再跳一次。"
+    },
+    {
+      "id": "first_strike_visor",
+      "name": "先手面甲",
+      "rarity": "legendary",
+      "slot": "trinket",
+      "base": null,
+      "bonus": {
+        "hit": 2,
+        "dmg": 2
+      },
+      "mods": {
+        "ac": 1
+      },
+      "daily": {
+        "id": "read_the_room",
+        "name": "读局",
+        "desc": "每场战斗一次，开局读遍敌人的架势：本场战斗每回合的第一次攻击检定具有优势。"
+      },
+      "desc": "攻击检定与伤害 +2、AC +1；每场战斗一次，开局后每回合的第一次攻击具有优势。",
+      "flavor": "面甲的缝只留一线，戴上它的人先看清别人，再被别人看清。"
+    },
+    {
+      "id": "windstep_boots",
+      "name": "疾行靴",
+      "rarity": "uncommon",
+      "slot": "boots",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "initiative": 4
+      },
+      "desc": "先攻 +4；鞋底踩过的地方会晚半拍才响。",
+      "flavor": "上一任主人逃过了所有追兵，最后死于自己的心跳。"
+    },
+    {
+      "id": "spellguard_legs",
+      "name": "法御腿甲",
+      "rarity": "uncommon",
+      "slot": "legs",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "saveBonus": 1,
+        "maxHp": 8
+      },
+      "desc": "所有豁免 +1，最大生命 +8。",
+      "flavor": "腿甲的衬里缝着一层层写过字的纸，字迹被汗泡烂了。"
+    },
+    {
+      "id": "stoneheart_greaves",
+      "name": "石心护胫",
+      "rarity": "rare",
+      "slot": "greaves",
+      "base": null,
+      "bonus": {},
+      "mods": {
+        "maxHp": 20,
+        "dr": 2
+      },
+      "desc": "最大生命 +20，受到的伤害 -2。",
+      "flavor": "胫甲内侧嵌着一块还在缓慢跳动的石头。"
+    }
+  ],
+  "consumables": [
+    {
+      "id": "potion_healing_lesser",
+      "name": "治疗药水（小）",
+      "kind": "potion",
+      "price": 50,
+      "action": "动作",
+      "effect": {
+        "heal": "2d4+2"
+      },
+      "desc": "饮下后回复 2d4+2 点生命；味道像掺了铁锈的蜂蜜。"
+    },
+    {
+      "id": "potion_healing_greater",
+      "name": "治疗药水（大）",
+      "kind": "potion",
+      "price": 150,
+      "action": "动作",
+      "effect": {
+        "heal": "4d4+4"
+      },
+      "desc": "饮下后回复 4d4+4 点生命；灌下去时伤口会自己往中间收。"
+    },
+    {
+      "id": "potion_healing_supreme",
+      "name": "治疗药水（极效）",
+      "kind": "potion",
+      "price": 450,
+      "action": "动作",
+      "effect": {
+        "heal": "8d4+8"
+      },
+      "desc": "饮下后回复 8d4+8 点生命；瓶中液体是金色的，喝下去像有人在体内点了盏灯。"
+    },
+    {
+      "id": "antidote",
+      "name": "解毒剂",
+      "kind": "potion",
+      "price": 50,
+      "action": "动作",
+      "effect": {
+        "cleanse": true,
+        "heal": "1d4"
+      },
+      "desc": "清除自身所有负面状态并回复 1d4 点生命；苦得让人直皱眉，但立刻见效。"
+    },
+    {
+      "id": "potion_fire_ward",
+      "name": "防火药剂",
+      "kind": "potion",
+      "price": 100,
+      "action": "动作",
+      "effect": {
+        "buff": {
+          "id": "fire_ward",
+          "name": "防火",
+          "desc": "获得火焰抗性直到战斗结束。",
+          "resist": [
+            "火焰"
+          ],
+          "turns": null
+        }
+      },
+      "desc": "获得火焰抗性直到战斗结束；皮肤上会浮起一层湿冷的白膜。"
+    },
+    {
+      "id": "potion_rage",
+      "name": "狂暴药剂",
+      "kind": "potion",
+      "price": 120,
+      "action": "动作",
+      "effect": {
+        "buff": {
+          "id": "rage",
+          "name": "狂暴",
+          "desc": "攻击检定与伤害 +2，但 AC -1，持续到战斗结束。",
+          "mods": {
+            "hit": 2,
+            "dmg": 2,
+            "ac": -1
+          },
+          "turns": null
+        }
+      },
+      "desc": "攻击检定与伤害 +2，AC -1，持续到战斗结束；喉咙里会泛起血的味道。"
+    },
+    {
+      "id": "potion_invisibility",
+      "name": "隐身药水",
+      "kind": "potion",
+      "price": 300,
+      "action": "动作",
+      "effect": {
+        "buff": {
+          "id": "invisible",
+          "name": "隐形",
+          "desc": "攻击检定具有优势，被攻击时有劣势。",
+          "turns": 3
+        }
+      },
+      "desc": "获得隐形状态 3 回合；喝下去时像被一层冷水从头浇到脚。"
+    },
+    {
+      "id": "potion_jump",
+      "name": "跳跃药水",
+      "kind": "potion",
+      "price": 100,
+      "action": "动作",
+      "effect": {
+        "buff": {
+          "id": "jump",
+          "name": "跳跃",
+          "desc": "跳跃距离变为三倍，撤离与跨越地形的检定具有优势。",
+          "mods": {
+            "ac": 1
+          },
+          "turns": 3
+        }
+      },
+      "desc": "3 回合内跳跃距离变为三倍，AC +1；膝盖会先于脑子知道该往哪落。"
+    },
+    {
+      "id": "scroll_burning_hands",
+      "name": "卷轴·燃烧之手",
+      "kind": "scroll",
+      "price": 60,
+      "action": "动作",
+      "effect": {
+        "cast": "burning_hands"
+      },
+      "desc": "释放燃烧之手：一片扇形烈焰从掌心泼出去，范围内的敌人须敏捷豁免。"
+    },
+    {
+      "id": "scroll_shield",
+      "name": "卷轴·护盾术",
+      "kind": "scroll",
+      "price": 60,
+      "action": "动作",
+      "effect": {
+        "cast": "shield"
+      },
+      "desc": "释放护盾术：一道力场挡在身前，短时间内大幅提升 AC。"
+    },
+    {
+      "id": "scroll_mirror_image",
+      "name": "卷轴·镜影术",
+      "kind": "scroll",
+      "price": 200,
+      "action": "动作",
+      "effect": {
+        "cast": "mirror_image"
+      },
+      "desc": "释放镜影术：分出数个镜像，每次被命中先消耗一层镜像。"
+    },
+    {
+      "id": "scroll_fireball",
+      "name": "卷轴·火球术",
+      "kind": "scroll",
+      "price": 500,
+      "action": "动作",
+      "effect": {
+        "cast": "fireball"
+      },
+      "desc": "释放火球术：在指定位置炸开一团烈焰，范围内的敌人须敏捷豁免，成功减半。"
+    },
+    {
+      "id": "dwarven_ale",
+      "name": "矮人烈酒",
+      "kind": "misc",
+      "price": 30,
+      "action": "动作",
+      "effect": {
+        "heal": "1d8+4"
+      },
+      "desc": "回复 1d8+4 点生命，但下一回合的攻击检定具有劣势；烧喉咙，也烧伤口。"
+    },
+    {
+      "id": "caltrop_pouch",
+      "name": "铁蒺藜袋",
+      "kind": "misc",
+      "price": 40,
+      "action": "动作",
+      "effect": {
+        "buff": {
+          "id": "caltrops",
+          "name": "铁蒺藜",
+          "desc": "在身前撒下一地尖刺，本场战斗中主动靠近你的敌人有几率被扎伤。",
+          "turns": null
+        }
+      },
+      "desc": "在身前撒下一地尖刺：本场战斗中主动靠近你的敌人有几率被扎伤。"
+    }
+  ],
+  "lootTables": {
+    "normal": [
+      [
+        "common",
+        80
+      ],
+      [
+        "uncommon",
+        20
+      ]
+    ],
+    "elite": [
+      [
+        "uncommon",
+        70
+      ],
+      [
+        "rare",
+        30
+      ]
+    ],
+    "boss": [
+      [
+        "rare",
+        70
+      ],
+      [
+        "very_rare",
+        30
+      ]
+    ]
+  },
+  "_slotNote": "新槽位：mainHand 右手 / offHand 左手 / body 上身 / legs 下身 / neck 项链 / ring 戒指 / bracers 护腕 / greaves 护腿 / helm 头盔 / boots 鞋。双手武器同时占用左右手；戒指从第 2 枚开始产生「能量干涉」。",
+  "mundane": [
+    {
+      "id": "leather_cap",
+      "name": "皮头盔",
+      "slot": "helm",
+      "mods": {
+        "maxHp": 4
+      },
+      "price": 30,
+      "desc": "最大生命 +4。"
+    },
+    {
+      "id": "iron_helm",
+      "name": "铁面盔",
+      "slot": "helm",
+      "mods": {
+        "ac": 1
+      },
+      "price": 60,
+      "desc": "AC +1。"
+    },
+    {
+      "id": "wood_necklace",
+      "name": "木珠项链",
+      "slot": "neck",
+      "mods": {
+        "maxHp": 4
+      },
+      "price": 25,
+      "desc": "最大生命 +4。"
+    },
+    {
+      "id": "silver_chain",
+      "name": "银链",
+      "slot": "neck",
+      "mods": {
+        "spellDc": 1
+      },
+      "price": 80,
+      "desc": "法术 DC +1。"
+    },
+    {
+      "id": "copper_ring",
+      "name": "铜戒",
+      "slot": "ring",
+      "mods": {
+        "maxHp": 3
+      },
+      "price": 30,
+      "desc": "最大生命 +3。"
+    },
+    {
+      "id": "iron_ring",
+      "name": "铁纹戒",
+      "slot": "ring",
+      "mods": {
+        "ac": 1
+      },
+      "price": 70,
+      "desc": "AC +1。"
+    },
+    {
+      "id": "leather_bracers",
+      "name": "皮护腕",
+      "slot": "bracers",
+      "mods": {
+        "ac": 1
+      },
+      "price": 40,
+      "desc": "AC +1。"
+    },
+    {
+      "id": "iron_bracers",
+      "name": "铁护腕",
+      "slot": "bracers",
+      "mods": {
+        "hit": 1
+      },
+      "price": 75,
+      "desc": "命中 +1。"
+    },
+    {
+      "id": "cloth_legs",
+      "name": "布裤",
+      "slot": "legs",
+      "mods": {
+        "maxHp": 3
+      },
+      "price": 20,
+      "desc": "最大生命 +3。"
+    },
+    {
+      "id": "leather_legs",
+      "name": "皮护腿裤",
+      "slot": "legs",
+      "mods": {
+        "maxHp": 6
+      },
+      "price": 45,
+      "desc": "最大生命 +6。"
+    },
+    {
+      "id": "chain_legs",
+      "name": "链甲裤",
+      "slot": "legs",
+      "mods": {
+        "ac": 1
+      },
+      "price": 90,
+      "desc": "AC +1。"
+    },
+    {
+      "id": "leather_greaves",
+      "name": "皮护胫",
+      "slot": "greaves",
+      "mods": {
+        "maxHp": 5
+      },
+      "price": 35,
+      "desc": "最大生命 +5。"
+    },
+    {
+      "id": "iron_greaves",
+      "name": "铁护胫",
+      "slot": "greaves",
+      "mods": {
+        "ac": 1,
+        "maxHp": 4
+      },
+      "price": 85,
+      "desc": "AC +1，最大生命 +4。"
+    },
+    {
+      "id": "soft_boots",
+      "name": "软底靴",
+      "slot": "boots",
+      "mods": {
+        "initiative": 2
+      },
+      "price": 40,
+      "desc": "先攻 +2。"
+    },
+    {
+      "id": "iron_boots",
+      "name": "铁头靴",
+      "slot": "boots",
+      "mods": {
+        "maxHp": 6
+      },
+      "price": 60,
+      "desc": "最大生命 +6。"
+    }
+  ]
+}
